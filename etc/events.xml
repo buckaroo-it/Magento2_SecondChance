@@ -37,6 +37,10 @@
         <observer name="buckaroo_event_process_handle_failed_before" instance="Buckaroo\Magento2SecondChance\Observer\ProcessHandleFailed"/>
     </event>
 
+    <event name="buckaroo_process_redirect_success_before">
+        <observer name="buckaroo_event_process_redirect_success_before" instance="Buckaroo\Magento2SecondChance\Observer\ProcessRedirectSuccess"/>
+    </event>
+
     <event name="checkout_onepage_controller_success_action">
         <observer name="buckaroo_magento2_second_chance_success_place_order" instance="Buckaroo\Magento2SecondChance\Observer\SecondChanceSuccessOrder"  />
     </event>
