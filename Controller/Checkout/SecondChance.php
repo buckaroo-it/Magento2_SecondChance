@@ -35,9 +35,9 @@ class SecondChance extends \Magento\Framework\App\Action\Action
     protected $secondChanceRepository;
 
     /**
-     * @param \Magento\Framework\App\Action\Context               $context
-     * @param Log                                                 $logger
-     * @param SecondChanceRepository                              $secondChanceRepository
+     * @param \Magento\Framework\App\Action\Context $context
+     * @param Log                                   $logger
+     * @param SecondChanceRepository                $secondChanceRepository
      *
      * @throws \Buckaroo\Magento2SecondChance\Exception
      */

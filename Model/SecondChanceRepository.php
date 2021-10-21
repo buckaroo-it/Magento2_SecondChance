@@ -98,17 +98,17 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     protected $identityContainer;
 
     /**
-     * @param ResourceSecondChance $resource
-     * @param SecondChanceFactory $secondChanceFactory
-     * @param SecondChanceInterfaceFactory $dataSecondChanceFactory
-     * @param SecondChanceCollectionFactory $secondChanceCollectionFactory
+     * @param ResourceSecondChance                      $resource
+     * @param SecondChanceFactory                       $secondChanceFactory
+     * @param SecondChanceInterfaceFactory              $dataSecondChanceFactory
+     * @param SecondChanceCollectionFactory             $secondChanceCollectionFactory
      * @param SecondChanceSearchResultsInterfaceFactory $searchResultsFactory
-     * @param DataObjectHelper $dataObjectHelper
-     * @param DataObjectProcessor $dataObjectProcessor
-     * @param StoreManagerInterface $storeManager
-     * @param CollectionProcessorInterface $collectionProcessor
-     * @param JoinProcessorInterface $extensionAttributesJoinProcessor
-     * @param ExtensibleDataObjectConverter $extensibleDataObjectConverter
+     * @param DataObjectHelper                          $dataObjectHelper
+     * @param DataObjectProcessor                       $dataObjectProcessor
+     * @param StoreManagerInterface                     $storeManager
+     * @param CollectionProcessorInterface              $collectionProcessor
+     * @param JoinProcessorInterface                    $extensionAttributesJoinProcessor
+     * @param ExtensibleDataObjectConverter             $extensibleDataObjectConverter
      */
     public function __construct(
         ResourceSecondChance $resource,
@@ -188,10 +188,12 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
         try {
             $this->resource->save($secondChanceModel);
         } catch (\Exception $exception) {
-            throw new CouldNotSaveException(__(
-                'Could not save the secondChance: %1',
-                $exception->getMessage()
-            ));
+            throw new CouldNotSaveException(
+                __(
+                    'Could not save the secondChance: %1',
+                    $exception->getMessage()
+                )
+            );
         }
         return $secondChanceModel->getDataModel();
     }
@@ -211,7 +213,9 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
 
     public function getByOrderId(string $orderId): SecondChanceInterface
     {
-        /** @var SecondChanceInterface $secondChanceEntity */
+        /**
+ * @var SecondChanceInterface $secondChanceEntity 
+*/
         $secondChanceEntity = $this->secondChanceFactory->create();
         $this->resource->load($secondChanceEntity, $orderId, SecondChanceInterface::ORDER_ID);
 
@@ -261,10 +265,12 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
             $this->resource->load($secondChanceModel, $secondChance->getSecondChanceId());
             $this->resource->delete($secondChanceModel);
         } catch (\Exception $exception) {
-            throw new CouldNotDeleteException(__(
-                'Could not delete the SecondChance: %1',
-                $exception->getMessage()
-            ));
+            throw new CouldNotDeleteException(
+                __(
+                    'Could not delete the SecondChance: %1',
+                    $exception->getMessage()
+                )
+            );
         }
         return true;
     }
@@ -327,12 +333,14 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
         if (!$this->customerSession->getSkipSecondChance()) {
             $this->logging->addDebug(__METHOD__ . '|2|');
             $secondChance = $this->secondChanceFactory->create();
-            $secondChance->setData([
+            $secondChance->setData(
+                [
                 'order_id'   => $order->getIncrementId(),
                 'token'      => $this->mathRandom->getUniqueHash(),
                 'store_id'   => $order->getStoreId(),
                 'created_at' => $this->dateTime->gmtDate(),
-            ]);
+                ]
+            );
             return $secondChance->save();
         }
         $this->logging->addDebug(__METHOD__ . '|3|');
@@ -355,8 +363,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
             $order = $this->orderFactory->create()->loadByIncrementId($item->getOrderId());
 
             if (!$order->getCustomerId() && $customerEmail = $order->getCustomerEmail()) {
-                if ($customer =
-                    $this->customerFactory->create()->setWebsiteId($order->getStoreId())->loadByEmail($customerEmail)
+                if ($customer =$this->customerFactory->create()->setWebsiteId($order->getStoreId())->loadByEmail($customerEmail)
                 ) {
                     if ($customer->getId()) {
                         $this->setCustomerAddress($customer, $order);
@@ -433,8 +440,9 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
                 continue;
             }
 
-            if ($item->getLastOrderId() != null &&
-                $last_order = $this->orderFactory->create()->loadByIncrementId($item->getLastOrderId())) {
+            if ($item->getLastOrderId() != null 
+                && $last_order = $this->orderFactory->create()->loadByIncrementId($item->getLastOrderId())
+            ) {
                 if ($last_order->hasInvoices()) {
                     $this->setFinalStatus($item, $final_status);
                     continue;
@@ -488,10 +496,12 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
                     'store' => $store->getId(),
                 ]
             )->setTemplateVars($vars)
-            ->setFrom([
+            ->setFrom(
+                [
                 'email' => $this->configProvider->getFromEmail($store),
                 'name'  => $this->configProvider->getFromName($store),
-            ])->addTo($order->getCustomerEmail());
+                ]
+            )->addTo($order->getCustomerEmail());
 
         if (!isset($transport)) {
             $transport = $this->transportBuilder->getTransport();
@@ -511,7 +521,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     /**
      * Render shipping address into html.
      *
-     * @param Order $order
+     * @param  Order $order
      * @return string|null
      */
     protected function getFormattedShippingAddress($order)
@@ -524,7 +534,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     /**
      * Render billing address into html.
      *
-     * @param Order $order
+     * @param  Order $order
      * @return string|null
      */
     protected function getFormattedBillingAddress($order)
@@ -558,8 +568,8 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
 
                     if ($orderItem->getProductType() == Type::TYPE_SIMPLE) {
                         //check is in stock flag and if there is enough qty
-                        if ((!$stock->getIsInStock()) ||
-                            ((int) ($orderItem->getQtyOrdered()) > (int) ($stock->getQty()))
+                        if ((!$stock->getIsInStock()) 
+                            || ((int) ($orderItem->getQtyOrdered()) > (int) ($stock->getQty()))
                         ) {
                             $this->logging->addDebug(
                                 __METHOD__ . '|not getIsInStock|' . $orderItem->getProduct()->getId()

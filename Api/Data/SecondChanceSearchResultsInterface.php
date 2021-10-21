@@ -26,13 +26,15 @@ interface SecondChanceSearchResultsInterface extends \Magento\Framework\Api\Sear
 
     /**
      * Get SecondChance list.
+     *
      * @return \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface[]
      */
     public function getItems();
 
     /**
      * Set quote_id list.
-     * @param \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface[] $items
+     *
+     * @param  \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface[] $items
      * @return $this
      */
     public function setItems(array $items);

@@ -35,7 +35,7 @@ class ProcessHandleFailed implements \Magento\Framework\Event\ObserverInterface
     protected $customerSession;
 
     /**
-     * @param \Magento\Checkout\Model\Cart          $cart
+     * @param \Magento\Checkout\Model\Cart $cart
      */
     public function __construct(
         \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository $secondChanceRepository,

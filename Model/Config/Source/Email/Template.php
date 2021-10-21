@@ -37,10 +37,10 @@ class Template extends \Magento\Framework\DataObject implements \Magento\Framewo
     protected $_templatesFactory;
 
     /**
-     * @param \Magento\Framework\Registry $coreRegistry
+     * @param \Magento\Framework\Registry                                   $coreRegistry
      * @param \Magento\Email\Model\ResourceModel\Template\CollectionFactory $templatesFactory
-     * @param \Magento\Email\Model\Template\Config $emailConfig
-     * @param array $data
+     * @param \Magento\Email\Model\Template\Config                          $emailConfig
+     * @param array                                                         $data
      */
     public function __construct(
         \Magento\Framework\Registry $coreRegistry,
@@ -61,7 +61,9 @@ class Template extends \Magento\Framework\DataObject implements \Magento\Framewo
      */
     public function toOptionArray()
     {
-        /** @var $collection \Magento\Email\Model\ResourceModel\Template\Collection */
+        /**
+ * @var $collection \Magento\Email\Model\ResourceModel\Template\Collection 
+*/
         if (!($collection = $this->_coreRegistry->registry('config_system_email_template'))) {
             $collection = $this->_templatesFactory->create();
             $collection->load();

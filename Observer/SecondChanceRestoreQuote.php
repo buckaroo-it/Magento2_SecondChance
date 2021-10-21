@@ -31,10 +31,9 @@ class SecondChanceRestoreQuote implements \Magento\Framework\Event\ObserverInter
     /**
      *
      * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
-     * @param \Magento\Customer\Model\Session $customerSession,
-     * @param \Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate $quoteRecreate
-     * @param \Buckaroo\Magento2\Logging\Log $logging,
-     *
+     * @param \Magento\Customer\Model\Session                                  $customerSession,
+     * @param \Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate      $quoteRecreate
+     * @param \Buckaroo\Magento2\Logging\Log                                   $logging,
      */
     public function __construct(
         \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,

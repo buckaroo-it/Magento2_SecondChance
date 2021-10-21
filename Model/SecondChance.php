@@ -35,13 +35,13 @@ class SecondChance extends \Magento\Framework\Model\AbstractModel
     protected $secondChanceDataFactory;
 
     /**
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param SecondChanceInterfaceFactory $secondChanceDataFactory
-     * @param DataObjectHelper $dataObjectHelper
-     * @param \Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance $resource
+     * @param \Magento\Framework\Model\Context                                           $context
+     * @param \Magento\Framework\Registry                                                $registry
+     * @param SecondChanceInterfaceFactory                                               $secondChanceDataFactory
+     * @param DataObjectHelper                                                           $dataObjectHelper
+     * @param \Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance            $resource
      * @param \Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance\Collection $resourceCollection
-     * @param array $data
+     * @param array                                                                      $data
      */
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -59,6 +59,7 @@ class SecondChance extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Retrieve secondChance model with secondChance data
+     *
      * @return SecondChanceInterface
      */
     public function getDataModel()

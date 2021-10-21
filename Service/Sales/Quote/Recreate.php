@@ -21,13 +21,19 @@ namespace Buckaroo\Magento2SecondChance\Service\Sales\Quote;
 
 class Recreate
 {
-    /** @var CartRepositoryInterface */
+    /**
+     * @var CartRepositoryInterface 
+     */
     private $cartRepository;
 
-    /** @var Cart */
+    /**
+     * @var Cart 
+     */
     private $cart;
 
-    /** @var \Magento\Checkout\Model\Session */
+    /**
+     * @var \Magento\Checkout\Model\Session 
+     */
     private $checkoutSession;
 
     protected $customerSession;
@@ -185,10 +191,16 @@ class Recreate
             $quote->setCustomerGroupId($customer->getGroupId());
             $quote->setCustomerIsGuest(false);
         }
-        $quote->setBillingAddress($oldQuote->getBillingAddress()->setQuote($quote)->setId(
-            $quote->getBillingAddress()->getId()));
-        $quote->setShippingAddress($oldQuote->getShippingAddress()->setQuote($quote)->setId(
-            $quote->getShippingAddress()->getId()));
+        $quote->setBillingAddress(
+            $oldQuote->getBillingAddress()->setQuote($quote)->setId(
+                $quote->getBillingAddress()->getId()
+            )
+        );
+        $quote->setShippingAddress(
+            $oldQuote->getShippingAddress()->setQuote($quote)->setId(
+                $quote->getShippingAddress()->getId()
+            )
+        );
         $quote->getShippingAddress()->setShippingMethod($oldQuote->getShippingAddress()->getShippingMethod());
         $this->quoteAddressResource->save($quote->getBillingAddress());
         $this->quoteAddressResource->save($quote->getShippingAddress());

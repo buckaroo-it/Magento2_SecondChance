@@ -28,6 +28,7 @@ class SecondChance extends \Magento\Framework\Api\AbstractExtensibleObject imple
 
     /**
      * Get secondChance_id
+     *
      * @return string|null
      */
     public function getSecondChanceId()
@@ -37,7 +38,8 @@ class SecondChance extends \Magento\Framework\Api\AbstractExtensibleObject imple
 
     /**
      * Set secondChance_id
-     * @param string $secondChanceId
+     *
+     * @param  string $secondChanceId
      * @return \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface
      */
     public function setSecondChanceId($secondChanceId)
@@ -47,6 +49,7 @@ class SecondChance extends \Magento\Framework\Api\AbstractExtensibleObject imple
 
     /**
      * Retrieve existing extension attributes object or create a new one.
+     *
      * @return \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceExtensionInterface|null
      */
     public function getExtensionAttributes()
@@ -56,7 +59,8 @@ class SecondChance extends \Magento\Framework\Api\AbstractExtensibleObject imple
 
     /**
      * Set an extension attributes object.
-     * @param \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceExtensionInterface $extensionAttributes
+     *
+     * @param  \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceExtensionInterface $extensionAttributes
      * @return $this
      */
     public function setExtensionAttributes(

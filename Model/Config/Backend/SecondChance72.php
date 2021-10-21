@@ -39,9 +39,11 @@ class SecondChance72 extends \Magento\Framework\App\Config\Value
         }
 
         if (!is_int($value) || $value < 0 || $value > 72) {
-            throw new \Magento\Framework\Exception\LocalizedException(__(
-                "Please enter a valid integer within 0 and 72 interval"
-            ));
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __(
+                    "Please enter a valid integer within 0 and 72 interval"
+                )
+            );
         }
 
         $this->setValue($value);

@@ -57,8 +57,8 @@ class SecondChance
     protected $secondChanceRepository;
 
     /**
-     * @param \Magento\Checkout\Model\Session\Proxy                $checkoutSession
-     * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance      $configProvider
+     * @param \Magento\Checkout\Model\Session\Proxy                            $checkoutSession
+     * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
      * @param \Buckaroo\Magento2SecondChance\Model\SecondChanceFactory         $secondChanceFactory
      */
     public function __construct(

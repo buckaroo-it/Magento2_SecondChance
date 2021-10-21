@@ -28,7 +28,8 @@ interface SecondChanceRepositoryInterface
 
     /**
      * Save SecondChance
-     * @param \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface $secondChance
+     *
+     * @param  \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface $secondChance
      * @return \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -38,7 +39,8 @@ interface SecondChanceRepositoryInterface
 
     /**
      * Retrieve SecondChance
-     * @param string $secondChanceId
+     *
+     * @param  string $secondChanceId
      * @return \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -46,7 +48,8 @@ interface SecondChanceRepositoryInterface
 
     /**
      * Retrieve SecondChance matching the specified criteria.
-     * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
+     *
+     * @param  \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
      * @return \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceSearchResultsInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -56,7 +59,8 @@ interface SecondChanceRepositoryInterface
 
     /**
      * Delete SecondChance
-     * @param \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface $secondChance
+     *
+     * @param  \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface $secondChance
      * @return bool true on success
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -66,7 +70,8 @@ interface SecondChanceRepositoryInterface
 
     /**
      * Delete SecondChance by ID
-     * @param string $secondChanceId
+     *
+     * @param  string $secondChanceId
      * @return bool true on success
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\LocalizedException

@@ -31,8 +31,8 @@ class SecondChance implements \Magento\Framework\Event\ObserverInterface
     protected $configProvider;
 
     /**
-     * @param \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository $secondChanceRepository,
-     * @param \Buckaroo\Magento2\Logging\Log $logging,
+     * @param \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository      $secondChanceRepository,
+     * @param \Buckaroo\Magento2\Logging\Log                                   $logging,
      * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
      */
     public function __construct(
