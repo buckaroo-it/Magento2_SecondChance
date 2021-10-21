@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the MIT License
+ * It is available through the world-wide-web at this URL:
+ * https://tldrlegal.com/license/mit-license
+ * If you are unable to obtain it through the world-wide-web, please send an email
+ * to support@buckaroo.nl so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this module to newer
+ * versions in the future. If you wish to customize this module for your
+ * needs please contact support@buckaroo.nl for more information.
+ *
+ * @copyright Copyright (c) Buckaroo B.V.
+ * @license   https://tldrlegal.com/license/mit-license
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    
+    <event name="controller_action_predispatch_checkout_index_index">
+        <observer name="buckaroo_second_chance_restore_quote" instance="Buckaroo\Magento2SecondChance\Observer\SecondChanceRestoreQuote" />
+    </event>
+
+    <event name="buckaroo_order_after">
+        <observer name="buckaroo_event_order_after_observer" instance="Buckaroo\Magento2SecondChance\Observer\SecondChance"/>
+    </event>
+
+    <event name="buckaroo_authorize_after">
+        <observer name="buckaroo_event_authorize_after_observer" instance="Buckaroo\Magento2SecondChance\Observer\SecondChance"/>
+    </event>
+
+    <event name="buckaroo_process_handle_failed_before">
+        <observer name="buckaroo_event_process_handle_failed_before" instance="Buckaroo\Magento2SecondChance\Observer\ProcessHandleFailed"/>
+    </event>
+
+    <event name="checkout_onepage_controller_success_action">
+        <observer name="buckaroo_magento2_second_chance_success_place_order" instance="Buckaroo\Magento2SecondChance\Observer\SecondChanceSuccessOrder"  />
+    </event>
+</config>
