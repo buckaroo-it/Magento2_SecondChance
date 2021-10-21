@@ -19,13 +19,8 @@
  */
 namespace Buckaroo\Magento2SecondChance\Observer;
 
-class SecondChanceSuccessOrder implements \Magento\Framework\Event\ObserverInterface
+class ProcessRedirectSuccess implements \Magento\Framework\Event\ObserverInterface
 {
-    /**
-     * @var \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository
-     */
-    protected $secondChanceRepository;
-
     protected $logging;
 
     protected $configProvider;
@@ -33,17 +28,14 @@ class SecondChanceSuccessOrder implements \Magento\Framework\Event\ObserverInter
     protected $customerSession;
 
     /**
-     * @param \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository      $secondChanceRepository,
      * @param \Buckaroo\Magento2\Logging\Log                                   $logging,
      * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
      */
     public function __construct(
-        \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository $secondChanceRepository,
         \Buckaroo\Magento2\Logging\Log $logging,
         \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,
         \Magento\Customer\Model\Session $customerSession
     ) {
-        $this->secondChanceRepository = $secondChanceRepository;
         $this->logging                = $logging;
         $this->configProvider         = $configProvider;
         $this->customerSession        = $customerSession;
