@@ -62,7 +62,7 @@ class Template extends \Magento\Framework\DataObject implements \Magento\Framewo
     public function toOptionArray()
     {
         /**
- * @var $collection \Magento\Email\Model\ResourceModel\Template\Collection 
+ * @var $collection \Magento\Email\Model\ResourceModel\Template\Collection
 */
         if (!($collection = $this->_coreRegistry->registry('config_system_email_template'))) {
             $collection = $this->_templatesFactory->create();

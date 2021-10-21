@@ -68,5 +68,4 @@ class SecondChance extends \Magento\Framework\Api\AbstractExtensibleObject imple
     ) {
         return $this->_setExtensionAttributes($extensionAttributes);
     }
-
 }

@@ -48,7 +48,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     protected $searchResultsFactory;
 
     protected $extensibleDataObjectConverter;
-    
+
     protected $secondChanceCollectionFactory;
 
     private $storeManager;
@@ -214,8 +214,8 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     public function getByOrderId(string $orderId): SecondChanceInterface
     {
         /**
- * @var SecondChanceInterface $secondChanceEntity 
-*/
+         * @var SecondChanceInterface $secondChanceEntity
+         */
         $secondChanceEntity = $this->secondChanceFactory->create();
         $this->resource->load($secondChanceEntity, $orderId, SecondChanceInterface::ORDER_ID);
 
@@ -335,10 +335,10 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
             $secondChance = $this->secondChanceFactory->create();
             $secondChance->setData(
                 [
-                'order_id'   => $order->getIncrementId(),
-                'token'      => $this->mathRandom->getUniqueHash(),
-                'store_id'   => $order->getStoreId(),
-                'created_at' => $this->dateTime->gmtDate(),
+                    'order_id'   => $order->getIncrementId(),
+                    'token'      => $this->mathRandom->getUniqueHash(),
+                    'store_id'   => $order->getStoreId(),
+                    'created_at' => $this->dateTime->gmtDate(),
                 ]
             );
             return $secondChance->save();
@@ -363,7 +363,9 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
             $order = $this->orderFactory->create()->loadByIncrementId($item->getOrderId());
 
             if (!$order->getCustomerId() && $customerEmail = $order->getCustomerEmail()) {
-                if ($customer =$this->customerFactory->create()->setWebsiteId($order->getStoreId())->loadByEmail($customerEmail)
+                if ($customer = $this->customerFactory->create()->setWebsiteId(
+                    $order->getStoreId()
+                )->loadByEmail($customerEmail)
                 ) {
                     if ($customer->getId()) {
                         $this->setCustomerAddress($customer, $order);
@@ -440,7 +442,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
                 continue;
             }
 
-            if ($item->getLastOrderId() != null 
+            if ($item->getLastOrderId() != null
                 && $last_order = $this->orderFactory->create()->loadByIncrementId($item->getLastOrderId())
             ) {
                 if ($last_order->hasInvoices()) {
@@ -498,8 +500,8 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
             )->setTemplateVars($vars)
             ->setFrom(
                 [
-                'email' => $this->configProvider->getFromEmail($store),
-                'name'  => $this->configProvider->getFromName($store),
+                    'email' => $this->configProvider->getFromEmail($store),
+                    'name'  => $this->configProvider->getFromName($store),
                 ]
             )->addTo($order->getCustomerEmail());
 
@@ -568,7 +570,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
 
                     if ($orderItem->getProductType() == Type::TYPE_SIMPLE) {
                         //check is in stock flag and if there is enough qty
-                        if ((!$stock->getIsInStock()) 
+                        if ((!$stock->getIsInStock())
                             || ((int) ($orderItem->getQtyOrdered()) > (int) ($stock->getQty()))
                         ) {
                             $this->logging->addDebug(

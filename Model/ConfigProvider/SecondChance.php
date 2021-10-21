@@ -128,7 +128,7 @@ class SecondChance
             $store
         );
         return (string) $config;
-    }    
+    }
 
     public function getSecondChanceTemplate($store = null): string
     {

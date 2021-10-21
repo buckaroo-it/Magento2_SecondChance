@@ -22,17 +22,17 @@ namespace Buckaroo\Magento2SecondChance\Service\Sales\Quote;
 class Recreate
 {
     /**
-     * @var CartRepositoryInterface 
+     * @var CartRepositoryInterface
      */
     private $cartRepository;
 
     /**
-     * @var Cart 
+     * @var Cart
      */
     private $cart;
 
     /**
-     * @var \Magento\Checkout\Model\Session 
+     * @var \Magento\Checkout\Model\Session
      */
     private $checkoutSession;
 
@@ -210,5 +210,4 @@ class Recreate
 
         return $quote;
     }
-
 }
