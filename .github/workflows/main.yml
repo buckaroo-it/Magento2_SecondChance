@@ -12,8 +12,8 @@ jobs:
       - name: setup php
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.3
-          tools: composer:v1
+          php-version: 7.4
+          tools: composer:v2
       - uses: actions/checkout@v2
       - name: validate composer json
         run: composer validate
