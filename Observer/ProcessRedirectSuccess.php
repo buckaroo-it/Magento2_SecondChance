@@ -28,17 +28,16 @@ class ProcessRedirectSuccess implements \Magento\Framework\Event\ObserverInterfa
     protected $customerSession;
 
     /**
-     * @param \Buckaroo\Magento2\Logging\Log                                   $logging,
-     * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
+     * @param \Magento\Checkout\Model\Cart          $cart
      */
     public function __construct(
         \Buckaroo\Magento2\Logging\Log $logging,
         \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,
         \Magento\Customer\Model\Session $customerSession
     ) {
-        $this->logging                = $logging;
-        $this->configProvider         = $configProvider;
-        $this->customerSession        = $customerSession;
+        $this->logging         = $logging;
+        $this->configProvider  = $configProvider;
+        $this->customerSession = $customerSession;
     }
 
     /**

@@ -22,29 +22,14 @@ namespace Buckaroo\Magento2SecondChance\Cron;
 class SecondChance
 {
     /**
-     * @var \Buckaroo\Magento2SecondChance\Model\SecondChanceFactory
-     */
-    protected $secondChanceFactory;
-
-    /**
-     * @var \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance
+     * @var \Buckaroo\Magento2SecondChance\Model\ConfigProvider\Account
      */
     protected $configProvider;
-
-    /**
-     * @var \Magento\Sales\Model\OrderFactory
-     */
-    protected $orderFactory;
 
     /**
      * @var Log $logging
      */
     public $logging;
-
-    /**
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    protected $storeManager;
 
     /**
      * @var \Magento\Store\Api\StoreRepositoryInterface
@@ -57,23 +42,16 @@ class SecondChance
     protected $secondChanceRepository;
 
     /**
-     * @param \Magento\Checkout\Model\Session\Proxy                            $checkoutSession
-     * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
-     * @param \Buckaroo\Magento2SecondChance\Model\SecondChanceFactory         $secondChanceFactory
+     * @param \Magento\Checkout\Model\Session\Proxy                $checkoutSession
+     * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\Account      $configProvider
      */
     public function __construct(
         \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,
-        \Buckaroo\Magento2SecondChance\Model\SecondChanceFactory $secondChanceFactory,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Store\Api\StoreRepositoryInterface $storeRepository,
         \Buckaroo\Magento2\Logging\Log $logging,
         \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository $secondChanceRepository
     ) {
         $this->configProvider         = $configProvider;
-        $this->secondChanceFactory    = $secondChanceFactory;
-        $this->orderFactory           = $orderFactory;
-        $this->storeManager           = $storeManager;
         $this->storeRepository        = $storeRepository;
         $this->logging                = $logging;
         $this->secondChanceRepository = $secondChanceRepository;
@@ -83,7 +61,7 @@ class SecondChance
     {
         $stores = $this->storeRepository->getList();
         foreach ($stores as $store) {
-            if ($this->configProvider->getSecondChance($store)) {
+            if ($this->configProvider->isSecondChanceEnabled($store)) {
                 foreach ([2, 1] as $step) {
                     $this->secondChanceRepository->getSecondChanceCollection($step, $store);
                 }
