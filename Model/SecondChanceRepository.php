@@ -37,6 +37,7 @@ use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Reflection\DataObjectProcessor;
 use Magento\Store\Model\StoreManagerInterface;
+use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface;
 
 class SecondChanceRepository implements SecondChanceRepositoryInterface
 {
@@ -174,13 +175,13 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
      * {@inheritdoc}
      */
     public function save(
-        \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface $secondChance
+        SecondChanceInterface $secondChance
     ) {
 
         $secondChanceData = $this->extensibleDataObjectConverter->toNestedArray(
             $secondChance,
             [],
-            \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface::class
+            SecondChanceInterface::class
         );
 
         $secondChanceModel = $this->secondChanceFactory->create()->setData($secondChanceData);
@@ -236,7 +237,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
 
         $this->extensionAttributesJoinProcessor->process(
             $collection,
-            \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface::class
+            SecondChanceInterface::class
         );
 
         $this->collectionProcessor->process($criteria, $collection);
@@ -258,7 +259,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
      * {@inheritdoc}
      */
     public function delete(
-        \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface $secondChance
+        SecondChanceInterface $secondChance
     ) {
         try {
             $secondChanceModel = $this->secondChanceFactory->create();
@@ -299,7 +300,6 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     public function deleteOlderRecords($store)
     {
         $days = (int) $this->configProvider->getSecondChancePruneDays($store);
-        $this->logging->addDebug(__METHOD__ . '|$storeId|' . $storeId);
         $this->logging->addDebug(__METHOD__ . '|$days|' . $days);
 
         if ($days <= 0) {
@@ -312,7 +312,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
                 'created_at',
                 ['lt' => new \Zend_Db_Expr('NOW() - INTERVAL ? DAY')]
             );
-            $storeCondition = $connection->prepareSqlCondition('store_id', $storeId);
+            $storeCondition = $connection->prepareSqlCondition('store_id', $store->getId());
             $connection->delete(
                 $this->resource->getMainTable(),
                 [$ageCondition => $days, $storeCondition]

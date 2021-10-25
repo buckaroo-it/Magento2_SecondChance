@@ -25,6 +25,7 @@ interface SecondChanceInterface extends \Magento\Framework\Api\ExtensibleDataInt
 {
 
     const ENTITY_ID = 'entity_id';
+    const ORDER_ID  = 'order_id';
 
     /**
      * Get secondChance_id

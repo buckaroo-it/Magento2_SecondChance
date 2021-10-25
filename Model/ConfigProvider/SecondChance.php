@@ -42,6 +42,7 @@ class SecondChance
         = 'buckaroo_magento2/second_chance/second_chance_template2';
 
     private const XML_PATH_SECOND_CHANCE_DEFAULT_TEMPLATE = 'buckaroo_second_chance';
+
     private const XML_PATH_SECOND_CHANCE_DEFAULT_TEMPLATE2 = 'buckaroo_second_chance2';
 
     private const XML_PATH_SECOND_CHANCE_TIMING
@@ -52,6 +53,9 @@ class SecondChance
 
     private const XML_PATH_SECOND_CHANCE_PRUNE_DAYS
         = 'buckaroo_magento2/second_chance/prune_days';
+
+    private const XML_PATH_SECOND_CHANCE_NO_SEND
+        = 'buckaroo_magento2/second_chance/no_send_second_chance';
 
     private const XML_PATH_SECOND_FINAL_STATUS = 10;
 
@@ -168,5 +172,15 @@ class SecondChance
             $store
         );
         return (string) $config;
+    }
+
+    public function getNoSendSecondChance($store = null): bool
+    {
+        $config = $this->storeConfig->getValue(
+            static::XML_PATH_SECOND_CHANCE_NO_SEND,
+            ScopeInterface::SCOPE_STORES,
+            $store
+        );
+        return (bool) $config;
     }
 }

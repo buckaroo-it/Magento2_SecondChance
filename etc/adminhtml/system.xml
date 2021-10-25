@@ -101,7 +101,6 @@
                 <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 <config_path>buckaroo_magento2/second_chance/no_send_second_chance</config_path>
                 <depends>
-                    <field id="cart_keep_alive">1</field>
                     <field id="enable_second_chance">1</field>
                 </depends>
             </field>
@@ -109,7 +108,7 @@
             <field id="second_chance_prune_days" translate="label comment" type="text" sortOrder="90" showInDefault="1" showInStore="1">
                 <label>Prune older second chance entries (days)</label>
                 <comment><![CDATA[Timing in days, 0 to disable this.]]></comment>
-                <config_path>buckaroo_magento2/second_chance/second_chance_prune_days</config_path>
+                <config_path>buckaroo_magento2/second_chance/prune_days</config_path>
                 <depends>
                     <field id="enable_second_chance">1</field>
                 </depends>

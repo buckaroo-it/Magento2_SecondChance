@@ -23,4 +23,16 @@
     <preference for="Buckaroo\Magento2SecondChance\Api\SecondChanceRepositoryInterface" type="Buckaroo\Magento2SecondChance\Model\SecondChanceRepository"/>
     <preference for="Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface" type="Buckaroo\Magento2SecondChance\Model\Data\SecondChance"/>
     <preference for="Buckaroo\Magento2SecondChance\Api\Data\SecondChanceSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+
+    <type name="Buckaroo\Magento2\Observer\RestoreQuote">
+        <plugin name="SecondChanceRestoreQuote" type="Buckaroo\Magento2SecondChance\Plugin\SecondChance" />
+    </type>
+
+    <type name="Buckaroo\Magento2\Controller\Redirect\Process">
+        <plugin name="SecondChanceRedirectProcess" type="Buckaroo\Magento2SecondChance\Plugin\SecondChance" />
+    </type>
+
+    <type name="Buckaroo\Magento2\Plugin\ShippingMethodManagement">
+        <plugin name="SecondChanceShippingMethodManagement" type="Buckaroo\Magento2SecondChance\Plugin\SecondChance" />
+    </type>
 </config>    

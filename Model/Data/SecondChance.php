@@ -25,7 +25,6 @@ use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface;
 
 class SecondChance extends \Magento\Framework\Api\AbstractExtensibleObject implements SecondChanceInterface
 {
-
     /**
      * Get secondChance_id
      *

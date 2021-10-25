@@ -25,9 +25,8 @@ use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface;
 use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterfaceFactory;
 use Magento\Framework\Api\DataObjectHelper;
 
-class SecondChance extends \Magento\Framework\Model\AbstractModel
+class SecondChance extends \Magento\Framework\Model\AbstractModel implements SecondChanceInterface
 {
-
     protected $dataObjectHelper;
 
     protected $_eventPrefix = 'buckaroo_magento2_second_chance';
@@ -74,5 +73,48 @@ class SecondChance extends \Magento\Framework\Model\AbstractModel
         );
 
         return $secondChanceDataObject;
+    }
+
+    /**
+     * Get secondChance_id
+     *
+     * @return string|null
+     */
+    public function getSecondChanceId()
+    {
+        return $this->_get(self::ENTITY_ID);
+    }
+
+    /**
+     * Set secondChance_id
+     *
+     * @param  string $secondChanceId
+     * @return \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface
+     */
+    public function setSecondChanceId($secondChanceId)
+    {
+        return $this->setData(self::ENTITY_ID, $secondChanceId);
+    }
+
+    /**
+     * Retrieve existing extension attributes object or create a new one.
+     *
+     * @return \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceExtensionInterface|null
+     */
+    public function getExtensionAttributes()
+    {
+        return $this->_getExtensionAttributes();
+    }
+
+    /**
+     * Set an extension attributes object.
+     *
+     * @param  \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceExtensionInterface $extensionAttributes
+     * @return $this
+     */
+    public function setExtensionAttributes(
+        \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceExtensionInterface $extensionAttributes
+    ) {
+        return $this->_setExtensionAttributes($extensionAttributes);
     }
 }
