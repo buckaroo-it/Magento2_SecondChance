@@ -25,7 +25,7 @@ namespace Buckaroo\Magento2SecondChance\Model\Config\Backend;
 class SecondChance extends \Magento\Framework\App\Config\Value
 {
     /**
-     * Test that the value is a integer within 0 and 24 interval
+     * Test that the value is a integer within 0 and 24/72 interval
      *
      * @return $this
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -33,15 +33,17 @@ class SecondChance extends \Magento\Framework\App\Config\Value
     public function save()
     {
         $value = (int) $this->getValue();
+        $item = $this->toArray();
+        $interval = $item['field'] == 'second_chance_timing2' ? 72 : 24;
 
         if (empty($value)) {
             return parent::save();
         }
 
-        if (!is_int($value) || $value < 0 || $value > 24) {
+        if (!is_int($value) || $value < 0 || $value > $interval) {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __(
-                    "Please enter a valid integer within 0 and 24 interval"
+                    "Please enter a valid integer within 0 and $interval interval"
                 )
             );
         }

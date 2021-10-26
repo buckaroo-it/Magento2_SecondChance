@@ -480,7 +480,6 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
                 }
             }
         }
-        $collection->save();
     }
 
     public function sendMail($order, $secondChance, $step)
@@ -574,7 +573,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
         );
     }
 
-    public function checkOrderProductsIsInStock($order)
+    private function checkOrderProductsIsInStock($order)
     {
         if ($allItems = $order->getAllItems()) {
             foreach ($allItems as $orderItem) {
@@ -608,7 +607,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
         return true;
     }
 
-    public function setFinalStatus($item, $status)
+    private function setFinalStatus($item, $status)
     {
         $item->setStatus($status);
         return $item->save();
