@@ -435,15 +435,15 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
             )
             ->addFieldToFilter('created_at', ['lteq' => new \Zend_Db_Expr('NOW() - INTERVAL ' . $timing . ' HOUR')])
             ->addFieldToFilter('created_at', ['gteq' => new \Zend_Db_Expr('NOW() - INTERVAL 5 DAY')])
-            ->setOrder('created_at','DESC');
+            ->setOrder('created_at', 'DESC');
 
         $flag = $this->dateTime->gmtDate();
 
         foreach ($collection as $item) {
             $order = $this->orderFactory->create()->loadByIncrementId($item->getOrderId());
 
-            if(!$this->configProvider->isMultipleEmailsSend($store)){
-                if($this->checkForMultipleEmail($order, $flag)){
+            if (!$this->configProvider->isMultipleEmailsSend($store)) {
+                if ($this->checkForMultipleEmail($order, $flag)) {
                     $this->setFinalStatus($item, $final_status);
                     continue;
                 }
@@ -638,9 +638,10 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
         }
     }
 
-    public function checkForMultipleEmail($order, $flag) {
+    public function checkForMultipleEmail($order, $flag)
+    {
         $multipleEmail = $this->checkoutSession->getMultipleEmail();
-        if(!empty($multipleEmail[$flag][$order->getCustomerEmail()])){
+        if (!empty($multipleEmail[$flag][$order->getCustomerEmail()])) {
             return true;
         }
         $multipleEmail[$flag][$order->getCustomerEmail()] = 1;
