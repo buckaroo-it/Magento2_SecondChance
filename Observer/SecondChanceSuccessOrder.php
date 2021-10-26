@@ -52,6 +52,7 @@ class SecondChanceSuccessOrder implements \Magento\Framework\Event\ObserverInter
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
+        $this->logging->addDebug(__METHOD__ . '|1|');
         /* @var $order \Magento\Sales\Model\Order */
         $order = $observer->getEvent()->getOrder();
         if ($order && $this->configProvider->isSecondChanceEnabled($order->getStore())) {

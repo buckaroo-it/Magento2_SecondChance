@@ -57,6 +57,9 @@ class SecondChance
     private const XML_PATH_SECOND_CHANCE_NO_SEND
         = 'buckaroo_magento2/second_chance/no_send_second_chance';
 
+    private const XML_PATH_SECOND_CHANCE_MULTIPLE_EMAILS_SEND
+        = 'buckaroo_magento2/second_chance/multiple_emails_send';
+
     private const XML_PATH_SECOND_FINAL_STATUS = 10;
 
     /**
@@ -89,7 +92,7 @@ class SecondChance
         return (string) $config;
     }
 
-    public function getFinalStatus(): string
+    public function getFinalStatus(): int
     {
         return static::XML_PATH_SECOND_FINAL_STATUS;
     }
@@ -182,5 +185,15 @@ class SecondChance
             $store
         );
         return (bool) $config;
+    }
+
+    public function isMultipleEmailsSend($store = null): string
+    {
+        $config = $this->storeConfig->getValue(
+            static::XML_PATH_SECOND_CHANCE_MULTIPLE_EMAILS_SEND,
+            ScopeInterface::SCOPE_STORES,
+            $store
+        );
+        return (string) $config;
     }
 }

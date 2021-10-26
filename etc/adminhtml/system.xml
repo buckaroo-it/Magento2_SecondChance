@@ -114,6 +114,15 @@
                 </depends>
             </field>
 
+            <field id="multiple_emails_send" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Multiple emails send per once</label>
+                <comment><![CDATA[If user got multiple second chance tries, send all of them]]></comment>
+                <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                <config_path>buckaroo_magento2/second_chance/multiple_emails_send</config_path>
+                <depends>
+                    <field id="enable_second_chance">1</field>
+                </depends>
+            </field>
         </group>
     </section>
   </system>

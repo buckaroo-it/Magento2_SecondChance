@@ -27,6 +27,7 @@
                 <second_chance_template2>buckaroo_second_chance2</second_chance_template2>
                 <second_chance_email>1</second_chance_email>
                 <second_chance_email2>1</second_chance_email2>
+                <multiple_emails_send>1</multiple_emails_send>
             </second_chance>
         </buckaroo_magento2>
     </default>
