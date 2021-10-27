@@ -24,6 +24,8 @@ namespace Buckaroo\Magento2SecondChance\Model;
 use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface;
 use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterfaceFactory;
 use Magento\Framework\Api\DataObjectHelper;
+use Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance as SecondChanceResource;
+use Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance\Collection as SecondChanceCollection;
 
 class SecondChance extends \Magento\Framework\Model\AbstractModel implements SecondChanceInterface
 {
@@ -38,8 +40,8 @@ class SecondChance extends \Magento\Framework\Model\AbstractModel implements Sec
      * @param \Magento\Framework\Registry                                                $registry
      * @param SecondChanceInterfaceFactory                                               $secondChanceDataFactory
      * @param DataObjectHelper                                                           $dataObjectHelper
-     * @param \Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance            $resource
-     * @param \Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance\Collection $resourceCollection
+     * @param SecondChanceResource            $resource
+     * @param SecondChanceCollection $resourceCollection
      * @param array                                                                      $data
      */
     public function __construct(
@@ -47,8 +49,8 @@ class SecondChance extends \Magento\Framework\Model\AbstractModel implements Sec
         \Magento\Framework\Registry $registry,
         SecondChanceInterfaceFactory $secondChanceDataFactory,
         DataObjectHelper $dataObjectHelper,
-        \Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance $resource,
-        \Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance\Collection $resourceCollection,
+        SecondChanceResource $resource,
+        SecondChanceCollection $resourceCollection,
         array $data = []
     ) {
         $this->secondChanceDataFactory = $secondChanceDataFactory;

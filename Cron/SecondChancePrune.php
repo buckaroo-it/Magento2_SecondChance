@@ -51,7 +51,6 @@ class SecondChancePrune
 
     public function execute()
     {
-        $this->logging->addDebug(__METHOD__ . '|1|');
         $stores = $this->storeRepository->getList();
         foreach ($stores as $store) {
             $this->secondChanceRepository->deleteOlderRecords($store);

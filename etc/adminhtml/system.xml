@@ -89,7 +89,7 @@
                 <label>Due hours (between 0 and 72hr)</label>
                 <comment><![CDATA[Timing for sender after the first one second-chance email.]]></comment>
                 <config_path>buckaroo_magento2/second_chance/second_chance_timing2</config_path>
-                <backend_model>Buckaroo\Magento2SecondChance\Model\Config\Backend\SecondChance72</backend_model>
+                <backend_model>Buckaroo\Magento2SecondChance\Model\Config\Backend\SecondChance</backend_model>
                 <depends>
                     <field id="second_chance_email2">1</field>
                 </depends>
@@ -114,6 +114,15 @@
                 </depends>
             </field>
 
+            <field id="multiple_emails_send" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Multiple emails send per once</label>
+                <comment><![CDATA[If user got multiple second chance tries, send all of them]]></comment>
+                <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                <config_path>buckaroo_magento2/second_chance/multiple_emails_send</config_path>
+                <depends>
+                    <field id="enable_second_chance">1</field>
+                </depends>
+            </field>
         </group>
     </section>
   </system>

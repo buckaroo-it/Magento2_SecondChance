@@ -21,6 +21,9 @@ declare (strict_types = 1);
 
 namespace Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance;
 
+use Buckaroo\Magento2SecondChance\Model\SecondChance as SecondChance;
+use Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance as SecondChanceResource;
+
 class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
 {
 
@@ -37,8 +40,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     protected function _construct()
     {
         $this->_init(
-            \Buckaroo\Magento2SecondChance\Model\SecondChance::class,
-            \Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance::class
+            SecondChance::class,
+            SecondChanceResource::class
         );
     }
 }

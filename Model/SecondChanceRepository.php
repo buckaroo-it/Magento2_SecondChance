@@ -214,6 +214,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
 
     public function getByOrderId(string $orderId): SecondChanceInterface
     {
+        $this->logging->addDebug(__METHOD__ . '|orderId|' . $orderId);
         /**
          * @var SecondChanceInterface $secondChanceEntity
          */
@@ -223,6 +224,8 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
         if (!$secondChanceEntity->getId()) {
             throw new NoSuchEntityException(__('SecondChance with orderId "%1" does not exist.', $orderId));
         }
+
+        $this->logging->addDebug(__METHOD__ . '|secondChanceEntity->getId|' . $secondChanceEntity->getId());
 
         return $secondChanceEntity;
     }
@@ -263,7 +266,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     ) {
         try {
             $secondChanceModel = $this->secondChanceFactory->create();
-            $this->resource->load($secondChanceModel, $secondChance->getSecondChanceId());
+            $this->resource->load($secondChanceModel, $secondChance->getId());
             $this->resource->delete($secondChanceModel);
         } catch (\Exception $exception) {
             throw new CouldNotDeleteException(
@@ -289,6 +292,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
      */
     public function deleteByOrderId($orderId)
     {
+        $this->logging->addDebug(__METHOD__ . '|1|');
         $secondChance = $this->getByOrderId($orderId);
 
         return $this->delete($secondChance);
@@ -300,11 +304,12 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     public function deleteOlderRecords($store)
     {
         $days = (int) $this->configProvider->getSecondChancePruneDays($store);
-        $this->logging->addDebug(__METHOD__ . '|$days|' . $days);
 
         if ($days <= 0) {
             return false;
         }
+
+        $this->logging->addDebug(__METHOD__ . '|'. $store->getId(). '|$days|' . $days);
 
         $connection = $this->resource->getConnection();
         try {
@@ -430,10 +435,20 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
                 ['eq' => $store->getId()]
             )
             ->addFieldToFilter('created_at', ['lteq' => new \Zend_Db_Expr('NOW() - INTERVAL ' . $timing . ' HOUR')])
-            ->addFieldToFilter('created_at', ['gteq' => new \Zend_Db_Expr('NOW() - INTERVAL 5 DAY')]);
+            ->addFieldToFilter('created_at', ['gteq' => new \Zend_Db_Expr('NOW() - INTERVAL 5 DAY')])
+            ->setOrder('created_at', 'DESC');
+
+        $flag = $this->dateTime->gmtDate();
 
         foreach ($collection as $item) {
             $order = $this->orderFactory->create()->loadByIncrementId($item->getOrderId());
+
+            if (!$this->configProvider->isMultipleEmailsSend($store)) {
+                if ($this->checkForMultipleEmail($order, $flag)) {
+                    $this->setFinalStatus($item, $final_status);
+                    continue;
+                }
+            }
 
             //BP-896 skip Transfer method
             $payment = $order->getPayment();
@@ -466,7 +481,6 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
                 }
             }
         }
-        $collection->save();
     }
 
     public function sendMail($order, $secondChance, $step)
@@ -560,7 +574,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
         );
     }
 
-    public function checkOrderProductsIsInStock($order)
+    private function checkOrderProductsIsInStock($order)
     {
         if ($allItems = $order->getAllItems()) {
             foreach ($allItems as $orderItem) {
@@ -594,7 +608,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
         return true;
     }
 
-    public function setFinalStatus($item, $status)
+    private function setFinalStatus($item, $status)
     {
         $item->setStatus($status);
         return $item->save();
@@ -622,5 +636,16 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
                 ->setSaveInAddressBook('1');
             $address->save();
         }
+    }
+
+    public function checkForMultipleEmail($order, $flag)
+    {
+        $multipleEmail = $this->checkoutSession->getMultipleEmail();
+        if (!empty($multipleEmail[$flag][$order->getCustomerEmail()])) {
+            return true;
+        }
+        $multipleEmail[$flag][$order->getCustomerEmail()] = 1;
+        $this->checkoutSession->setMultipleEmail($multipleEmail);
+        return false;
     }
 }
