@@ -304,11 +304,12 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     public function deleteOlderRecords($store)
     {
         $days = (int) $this->configProvider->getSecondChancePruneDays($store);
-        $this->logging->addDebug(__METHOD__ . '|$days|' . $days);
 
         if ($days <= 0) {
             return false;
         }
+
+        $this->logging->addDebug(__METHOD__ . '|'. $store->getId(). '|$days|' . $days);
 
         $connection = $this->resource->getConnection();
         try {
