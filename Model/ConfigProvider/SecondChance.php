@@ -30,10 +30,10 @@ class SecondChance
         = 'buckaroo_magento2/second_chance/enable_second_chance';
 
     private const XML_PATH_SECOND_CHANCE_EMAIL
-        = 'buckaroo_magento2/second_chance/email';
+        = 'buckaroo_magento2/second_chance/second_chance_email';
 
     private const XML_PATH_SECOND_CHANCE_EMAIL2
-        = 'buckaroo_magento2/second_chance/email2';
+        = 'buckaroo_magento2/second_chance/second_chance_email2';
 
     private const XML_PATH_SECOND_CHANCE_TEMPLATE
         = 'buckaroo_magento2/second_chance/second_chance_template';
