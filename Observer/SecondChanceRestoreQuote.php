@@ -25,25 +25,20 @@ class SecondChanceRestoreQuote implements \Magento\Framework\Event\ObserverInter
 
     protected $customerSession;
 
-    protected $quoteRecreate;
-
     protected $logging;
     /**
      *
      * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
      * @param \Magento\Customer\Model\Session                                  $customerSession,
-     * @param \Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate      $quoteRecreate
      * @param \Buckaroo\Magento2\Logging\Log                                   $logging,
      */
     public function __construct(
         \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,
         \Magento\Customer\Model\Session $customerSession,
-        \Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate $quoteRecreate,
         \Buckaroo\Magento2\Logging\Log $logging
     ) {
         $this->configProvider  = $configProvider;
         $this->customerSession = $customerSession;
-        $this->quoteRecreate   = $quoteRecreate;
         $this->logging         = $logging;
     }
 
@@ -56,7 +51,6 @@ class SecondChanceRestoreQuote implements \Magento\Framework\Event\ObserverInter
     {
         if ($quoteId = $this->customerSession->getSecondChanceRecreate()) {
             try {
-                $this->quoteRecreate->recreateById($quoteId);
                 $this->customerSession->setSecondChanceRecreate(false);
             } catch (\Exception $e) {
                 $this->logging->addError('Could not recreateById SC:' . $quoteId);
