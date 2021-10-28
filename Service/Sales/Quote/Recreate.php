@@ -211,7 +211,7 @@ class Recreate
         try {
             $this->cart->save();
         } catch (\Exception $e) {
-            $this->messageManager->addErrorMessage($e->getMessage());  
+            $this->messageManager->addErrorMessage($e->getMessage());
         }
 
         return $quote;
