@@ -102,6 +102,7 @@ class Recreate
             $quote->setBuckarooFeeInclTax(null);
             $quote->setBaseBuckarooFeeInclTax(null);
             $quote->save();
+            $this->checkoutSession->replaceQuote($quote);
             $this->cart->setQuote($quote);
             $this->cart->save();
             return $quote;
@@ -206,7 +207,12 @@ class Recreate
         $this->quoteAddressResource->save($quote->getShippingAddress());
 
         $this->cart->setQuote($quote);
-        $this->cart->save();
+
+        try {
+            $this->cart->save();
+        } catch (\Exception $e) {
+            $this->messageManager->addErrorMessage($e->getMessage());  
+        }
 
         return $quote;
     }

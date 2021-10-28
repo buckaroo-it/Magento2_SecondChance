@@ -97,6 +97,8 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     protected $paymentHelper;
 
     protected $identityContainer;
+    
+    protected $quoteRecreate;
 
     /**
      * @param ResourceSecondChance                      $resource
@@ -139,7 +141,8 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
         \Magento\Framework\Mail\Template\TransportBuilder $transportBuilder,
         \Magento\Sales\Model\Order\Address\Renderer $addressRenderer,
         \Magento\Payment\Helper\Data $paymentHelper,
-        \Magento\Sales\Model\Order\Email\Container\ShipmentIdentity $identityContainer
+        \Magento\Sales\Model\Order\Email\Container\ShipmentIdentity $identityContainer,
+        \Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate $quoteRecreate
     ) {
         $this->resource                         = $resource;
         $this->secondChanceFactory              = $secondChanceFactory;
@@ -169,6 +172,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
         $this->addressRenderer                  = $addressRenderer;
         $this->paymentHelper                    = $paymentHelper;
         $this->identityContainer                = $identityContainer;
+        $this->quoteRecreate                    = $quoteRecreate;
     }
 
     /**
@@ -380,6 +384,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
             $this->customerSession->setSecondChanceRecreate($order->getQuoteId());
             $newOrderId = $this->setAvailableIncrementId($item->getOrderId(), $item, $order);
             $this->customerSession->setSecondChanceNewIncrementId($newOrderId);
+            $this->quoteRecreate->recreateById($order->getQuoteId());
         }
     }
 
