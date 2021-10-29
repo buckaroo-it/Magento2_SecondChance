@@ -154,7 +154,7 @@ class Recreate
                 $quote->setCustomerIsGuest(false);
             }
 
-            $this->recreate($quote);
+            $quote = $this->recreate($quote);
 
             return $this->additionalMerge($oldQuote, $quote);
 
@@ -167,10 +167,13 @@ class Recreate
         try {
             $oldQuote = $this->quoteFactory->create()->load($order->getQuoteId());
             $quote->merge($oldQuote)->save();
+            $oldQuote->setIsActive(true);
+            $oldQuote->save();
         } catch (\Exception $e) {
             $this->logger->addError($e->getMessage());
         }
-        $this->recreate($quote);
+
+        $quote = $this->recreate($quote);
 
         return $this->additionalMerge($oldQuote, $quote);
     }
