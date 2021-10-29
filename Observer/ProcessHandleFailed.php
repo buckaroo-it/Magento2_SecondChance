@@ -59,7 +59,7 @@ class ProcessHandleFailed implements \Magento\Framework\Event\ObserverInterface
         /* @var $order \Magento\Sales\Model\Order */
         $order = $observer->getEvent()->getOrder();
 
-        if(!$order){
+        if (!$order) {
             $this->logging->addDebug(__METHOD__ . '|no observer order|');
             $order = $this->checkoutSession->getLastRealOrder();
         }
