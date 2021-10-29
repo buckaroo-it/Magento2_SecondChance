@@ -28,6 +28,8 @@ class ProcessHandleFailed implements \Magento\Framework\Event\ObserverInterface
     protected $quoteRecreate;
 
     protected $customerSession;
+    
+    protected $checkoutSession;
 
     /**
      * @param \Magento\Checkout\Model\Cart          $cart
@@ -36,12 +38,14 @@ class ProcessHandleFailed implements \Magento\Framework\Event\ObserverInterface
         \Buckaroo\Magento2\Logging\Log $logging,
         \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,
         \Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate $quoteRecreate,
-        \Magento\Customer\Model\Session $customerSession
+        \Magento\Customer\Model\Session $customerSession,
+        \Magento\Checkout\Model\Session $checkoutSession
     ) {
         $this->logging         = $logging;
         $this->configProvider  = $configProvider;
         $this->quoteRecreate   = $quoteRecreate;
         $this->customerSession = $customerSession;
+        $this->checkoutSession = $checkoutSession;
     }
 
     /**
@@ -54,6 +58,12 @@ class ProcessHandleFailed implements \Magento\Framework\Event\ObserverInterface
         $this->logging->addDebug(__METHOD__ . '|1|');
         /* @var $order \Magento\Sales\Model\Order */
         $order = $observer->getEvent()->getOrder();
+
+        if(!$order){
+            $this->logging->addDebug(__METHOD__ . '|no observer order|');
+            $order = $this->checkoutSession->getLastRealOrder();
+        }
+
         if ($order && $this->configProvider->isSecondChanceEnabled($order->getStore())) {
             $this->quoteRecreate->duplicate($order);
             $this->customerSession->setSkipHandleFailedRecreate(1);
