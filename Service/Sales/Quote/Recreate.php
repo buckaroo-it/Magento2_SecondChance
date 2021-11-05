@@ -90,8 +90,12 @@ class Recreate
      */
     public function recreate($quote)
     {
+        $this->logger->addDebug(__METHOD__ . '|1|');
         // @codingStandardsIgnoreStart
         try {
+            if ($newIncrementId = $quote->getReservedOrderId()) {
+                $this->logger->addDebug(__METHOD__ . '|5|' . $newIncrementId);
+            }
             $quote->setIsActive(true);
             $quote->setTriggerRecollect('1');
             $quote->setReservedOrderId(null);
@@ -103,6 +107,9 @@ class Recreate
             $quote->setBaseBuckarooFeeInclTax(null);
             $quote->save();
             $this->checkoutSession->replaceQuote($quote);
+            if ($newIncrementId) {
+                $quote->setReservedOrderId($newIncrementId);
+            }
             $this->cart->setQuote($quote);
             $this->cart->save();
             return $quote;
@@ -116,6 +123,7 @@ class Recreate
 
     public function recreateById($quoteId)
     {
+        $this->logger->addDebug(__METHOD__ . '|1|' . $quoteId);
         try {
             $oldQuote = $this->quoteFactory->create()->load($quoteId);
         } catch (\Exception $e) {
@@ -123,6 +131,7 @@ class Recreate
         }
 
         if ($oldQuote->getId()) {
+            $this->logger->addDebug(__METHOD__ . '|5|');
             try {
                 $quote = $this->quoteFactory->create();
                 $quote->merge($oldQuote)->save();
@@ -137,6 +146,7 @@ class Recreate
             $this->checkoutSession->setQuoteId($quote->getId());
 
             if ($newIncrementId = $this->customerSession->getSecondChanceNewIncrementId()) {
+                $this->logger->addDebug(__METHOD__ . '|15|' . $newIncrementId);
                 $this->customerSession->setSecondChanceNewIncrementId(false);
                 $this->checkoutSession->getQuote()->setReservedOrderId($newIncrementId);
                 $this->checkoutSession->getQuote()->save();
@@ -154,6 +164,7 @@ class Recreate
                 $quote->setCustomerIsGuest(false);
             }
 
+            $this->logger->addDebug(__METHOD__ . '|30|');
             $quote = $this->recreate($quote);
 
             return $this->additionalMerge($oldQuote, $quote);
