@@ -2,7 +2,7 @@
   <img src="https://www.buckaroo.nl/media/2968/buckaroo.png" width="250px" position="center">
 </p>
 
-# Buckaroo Magento2 Second Chance extension
+# Buckaroo Magento 2 Second Chance extension
 
 ## Installation
 ```
