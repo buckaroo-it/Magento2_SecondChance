@@ -23,13 +23,16 @@ class SecondChance
 {
     protected $customerSession;
     protected $logger;
+    protected $configProvider;
 
     public function __construct(
         \Magento\Customer\Model\Session $customerSession,
-        \Buckaroo\Magento2\Logging\Log $logger
+        \Buckaroo\Magento2\Logging\Log $logger,
+        \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
     ) {
-        $this->customerSession    = $customerSession;
+        $this->customerSession = $customerSession;
         $this->logger = $logger;
+        $this->configProvider = $configProvider;
     }
 
     public function aroundShouldSkipFurtherEventHandling()
@@ -37,9 +40,9 @@ class SecondChance
         return $this->customerSession->getSecondChanceRecreate();
     }
 
-    public function aroundIsNeedRecreate()
+    public function aroundIsNeedRecreate(\Buckaroo\Magento2\Plugin\ShippingMethodManagement $subject, $proceed, $store)
     {
-        return $this->customerSession->getSecondChanceRecreate();
+        return $this->configProvider->isSecondChanceEnabled($store);
     }
     
     public function aroundGetSkipHandleFailedRecreate()
