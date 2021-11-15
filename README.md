@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://www.buckaroo.nl/media/2968/buckaroo.png" width="250px" position="center">
+  <img src="https://www.buckaroo.nl/media/2975/m2_icon.jpg" width="150px" position="center">
 </p>
 
 # Buckaroo Magento 2 Second Chance extension
