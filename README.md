@@ -34,7 +34,8 @@ In the module configuration, various settings are available to build an ideal Se
 </p>
 
 ### Additional information
-For more information on Second Chance please visit: https://support.buckaroo.nl/categorieen/plugins/magento-2/magento-2-second-chance-extensie
+For more information on Second Chance please visit:
+https://support.buckaroo.nl/categorieen/plugins/magento-2/magento-2-second-chance-extensie
 
 ## Contribute
 See [Contribution Guidelines](CONTRIBUTING.md)
