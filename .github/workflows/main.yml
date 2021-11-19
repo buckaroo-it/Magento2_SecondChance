@@ -1,0 +1,34 @@
+name: Module checks
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          tools: composer:v2
+      - uses: actions/checkout@v2
+      - name: validate composer json
+        run: composer validate
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}/${{ env.namespace }}-source/vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+      - name: PHPUnit and PHPCS
+        run: |
+          echo '{"http-basic": {"repo.magento.com": {"username": "${{ secrets.REPO_USERNAME }}","password": "${{ secrets.REPO_PASS }}"}}}' > auth.json
+          composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=2.4.3 m24
+          mkdir -p m24/app/code/Buckaroo/SecondChance/
+          rsync -r --exclude='m24' ./ m24/app/code/Buckaroo/SecondChance/                    
+          ./m24/vendor/bin/phpcs --standard=Magento2 m24/app/code/Buckaroo/SecondChance/
