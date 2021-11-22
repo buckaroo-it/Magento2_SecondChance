@@ -297,9 +297,11 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     public function deleteByOrderId($orderId)
     {
         $this->logging->addDebug(__METHOD__ . '|1|');
-        $secondChance = $this->getByOrderId($orderId);
-
-        return $this->delete($secondChance);
+        if ($orderId) {
+            $secondChance = $this->getByOrderId($orderId);
+            return $this->delete($secondChance);
+        }
+        return false;
     }
 
     /**
