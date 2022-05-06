@@ -209,12 +209,12 @@ class Recreate
         $quote->setBillingAddress(
             $oldQuote->getBillingAddress()->setQuote($quote)->setId(
                 $quote->getBillingAddress()->getId()
-            )
+            )->setCustomerAddressId($customer->getId())
         );
         $quote->setShippingAddress(
             $oldQuote->getShippingAddress()->setQuote($quote)->setId(
                 $quote->getShippingAddress()->getId()
-            )
+            )->setCustomerAddressId($customer->getId())
         );
         $quote->getShippingAddress()->setShippingMethod($oldQuote->getShippingAddress()->getShippingMethod());
         $this->quoteAddressResource->save($quote->getBillingAddress());
