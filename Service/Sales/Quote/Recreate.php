@@ -88,7 +88,7 @@ class Recreate
      *
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function recreate($quote)
+    protected function recreate($quote)
     {
         $this->logger->addDebug(__METHOD__ . '|1|');
         // @codingStandardsIgnoreStart
@@ -105,13 +105,11 @@ class Recreate
             $quote->setBuckarooFeeBaseTaxAmount(null);
             $quote->setBuckarooFeeInclTax(null);
             $quote->setBaseBuckarooFeeInclTax(null);
-            $quote->save();
             $this->checkoutSession->replaceQuote($quote);
             if ($newIncrementId) {
                 $quote->setReservedOrderId($newIncrementId);
             }
             $this->cart->setQuote($quote);
-            $this->cart->save();
             return $quote;
         } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
             //No such entity
@@ -183,7 +181,6 @@ class Recreate
         } catch (\Exception $e) {
             $this->logger->addError($e->getMessage());
         }
-
         $quote = $this->recreate($quote);
 
         return $this->additionalMerge($oldQuote, $quote);
@@ -209,20 +206,20 @@ class Recreate
         $quote->setBillingAddress(
             $oldQuote->getBillingAddress()->setQuote($quote)->setId(
                 $quote->getBillingAddress()->getId()
-            )->setCustomerAddressId($customer->getId())
+            )
         );
         $quote->setShippingAddress(
             $oldQuote->getShippingAddress()->setQuote($quote)->setId(
                 $quote->getShippingAddress()->getId()
-            )->setCustomerAddressId($customer->getId())
+            )
         );
         $quote->getShippingAddress()->setShippingMethod($oldQuote->getShippingAddress()->getShippingMethod());
         $this->quoteAddressResource->save($quote->getBillingAddress());
         $this->quoteAddressResource->save($quote->getShippingAddress());
-
-        $this->cart->setQuote($quote);
-
+        
         try {
+            $quote->save();
+            $this->cart->setQuote($quote);
             $this->cart->save();
         } catch (\Exception $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
