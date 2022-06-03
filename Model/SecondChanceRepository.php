@@ -38,6 +38,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Reflection\DataObjectProcessor;
 use Magento\Store\Model\StoreManagerInterface;
 use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface;
+use Magento\Catalog\Model\Product\Type;
 
 class SecondChanceRepository implements SecondChanceRepositoryInterface
 {
