@@ -142,6 +142,9 @@ class Recreate
 
             $quote->setStoreId($oldQuote->getStoreId());
             $quote->getPayment()->setMethod($oldQuote->getPayment()->getMethod());
+
+            $this->setPaymentFromFlag($quote, $oldQuote);
+
             $this->cart->setStoreId($oldQuote->getStoreId());
             $this->checkoutSession->setQuoteId($quote->getId());
 
@@ -229,5 +232,21 @@ class Recreate
         }
 
         return $quote;
+    }
+    /**
+     * Set payment from flag for the new quote
+     *
+     * @param Quote $quote
+     * @param Quote $oldQuote
+     *
+     * @return void
+     */
+    protected function setPaymentFromFlag($quote, $oldQuote)
+    {
+        $additionalData = $oldQuote->getPayment()->getAdditionalInformation();
+        
+        if (is_array($additionalData) && isset($additionalData['buckaroo_payment_from'])) {
+            $quote->getPayment()->setAdditionalInformation('buckaroo_payment_from', $additionalData['buckaroo_payment_from']);
+        }
     }
 }

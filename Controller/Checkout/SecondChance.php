@@ -62,6 +62,10 @@ class SecondChance extends \Magento\Framework\App\Action\Action
         if ($token = $this->getRequest()->getParam('token')) {
             $this->secondChanceRepository->getSecondChanceByToken($token);
         }
-        return $this->_redirect('checkout', ['_fragment' => 'payment']);
+        return $this->handleRedirect('checkout', ['_fragment' => 'payment']);
+    }
+    public function handleRedirect($path, $arguments = [])
+    {
+        return $this->_redirect($path, $arguments);
     }
 }
