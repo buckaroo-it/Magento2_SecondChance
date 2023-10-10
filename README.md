@@ -3,6 +3,7 @@
 </p>
 
 # Buckaroo Magento 2 Second Chance plugin
+[![Latest release](https://badgen.net/github/release/buckaroo-it/Magento2_SecondChance)](https://github.com/buckaroo-it/Magento2_SecondChance/releases)
 
 ### Index
 - [About](#about)
