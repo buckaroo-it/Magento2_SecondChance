@@ -97,7 +97,7 @@ class Recreate
                 $this->logger->addDebug(__METHOD__ . '|5|' . $newIncrementId);
             }
             $quote->setIsActive(true);
-            $quote->setTriggerRecollect('1');
+//            $quote->setTriggerRecollect('1');
             $quote->setReservedOrderId(null);
             $quote->setBuckarooFee(null);
             $quote->setBaseBuckarooFee(null);
