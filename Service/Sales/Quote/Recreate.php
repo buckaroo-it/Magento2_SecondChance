@@ -105,11 +105,31 @@ class Recreate
             $quote->setBuckarooFeeBaseTaxAmount(null);
             $quote->setBuckarooFeeInclTax(null);
             $quote->setBaseBuckarooFeeInclTax(null);
+
+            if (isset($response['add_service_action_from_magento']) && $response['add_service_action_from_magento'] === 'payfastcheckout') {
+                $this->logger->addDebug(__METHOD__ . '|Handling payfastcheckout specific logic.');
+
+                $quote->setCustomerEmail(null);
+
+                // Remove existing addresses if they exist
+                if ($billingAddress = $quote->getBillingAddress()) {
+                    $quote->removeAddress($billingAddress->getId());
+                    $billingAddress->addData([]); // Optionally clear address data
+                }
+
+                if ($shippingAddress = $quote->getShippingAddress()) {
+                    $quote->removeAddress($shippingAddress->getId());
+                    $shippingAddress->addData([]); // Optionally clear address data
+                }
+            }
+
+            $quote->save();
             $this->checkoutSession->replaceQuote($quote);
             if ($newIncrementId) {
                 $quote->setReservedOrderId($newIncrementId);
             }
             $this->cart->setQuote($quote);
+
             return $quote;
         } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
             //No such entity
@@ -173,7 +193,7 @@ class Recreate
         }
     }
 
-    public function duplicate($order)
+    public function duplicate($order, $response = [])
     {
         $quote = $this->quoteFactory->create();
         try {
@@ -184,10 +204,30 @@ class Recreate
         } catch (\Exception $e) {
             $this->logger->addError($e->getMessage());
         }
-        $quote = $this->recreate($quote);
+
+        // Check if the action is 'payfastcheckout' and remove addresses if needed
+        if (isset($response['add_service_action_from_magento']) && $response['add_service_action_from_magento'] === 'payfastcheckout') {
+            $this->logger->addDebug(__METHOD__ . '|Handling payfastcheckout specific logic.');
+
+            $quote->setCustomerEmail(null);
+
+            // Remove existing addresses if they exist
+            if ($billingAddress = $quote->getBillingAddress()) {
+                $quote->removeAddress($billingAddress->getId());
+                $billingAddress->addData([]); // Optionally clear address data
+            }
+
+            if ($shippingAddress = $quote->getShippingAddress()) {
+                $quote->removeAddress($shippingAddress->getId());
+                $shippingAddress->addData([]); // Optionally clear address data
+            }
+        }
+
+        $quote = $this->recreate($quote, $response);
 
         return $this->additionalMerge($oldQuote, $quote);
     }
+
 
     private function additionalMerge($oldQuote, $quote)
     {
@@ -219,7 +259,7 @@ class Recreate
         $quote->getShippingAddress()->setShippingMethod($oldQuote->getShippingAddress()->getShippingMethod());
         $this->quoteAddressResource->save($quote->getBillingAddress());
         $this->quoteAddressResource->save($quote->getShippingAddress());
-        
+
         try {
             $quote->save();
             $this->cart->setQuote($quote);
@@ -241,7 +281,7 @@ class Recreate
     protected function setPaymentFromFlag($quote, $oldQuote)
     {
         $additionalData = $oldQuote->getPayment()->getAdditionalInformation();
-        
+
         if (is_array($additionalData) && isset($additionalData['buckaroo_payment_from'])) {
             $quote->getPayment()->setAdditionalInformation('buckaroo_payment_from', $additionalData['buckaroo_payment_from']);
         }
