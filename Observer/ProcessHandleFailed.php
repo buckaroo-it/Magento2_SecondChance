@@ -19,8 +19,15 @@
  */
 namespace Buckaroo\Magento2SecondChance\Observer;
 
+use Magento\Framework\App\RequestInterface;
+
 class ProcessHandleFailed implements \Magento\Framework\Event\ObserverInterface
 {
+    /**
+     * @var array
+     */
+    protected $response;
+
     protected $logging;
 
     protected $configProvider;
@@ -28,8 +35,10 @@ class ProcessHandleFailed implements \Magento\Framework\Event\ObserverInterface
     protected $quoteRecreate;
 
     protected $customerSession;
-    
+
     protected $checkoutSession;
+    protected $request;
+
 
     /**
      * @param \Magento\Checkout\Model\Cart          $cart
@@ -39,13 +48,15 @@ class ProcessHandleFailed implements \Magento\Framework\Event\ObserverInterface
         \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,
         \Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate $quoteRecreate,
         \Magento\Customer\Model\Session $customerSession,
-        \Magento\Checkout\Model\Session $checkoutSession
+        \Magento\Checkout\Model\Session $checkoutSession,
+        RequestInterface $request
     ) {
         $this->logging         = $logging;
         $this->configProvider  = $configProvider;
         $this->quoteRecreate   = $quoteRecreate;
         $this->customerSession = $customerSession;
         $this->checkoutSession = $checkoutSession;
+        $this->request         = $request;
     }
 
     /**
@@ -58,14 +69,17 @@ class ProcessHandleFailed implements \Magento\Framework\Event\ObserverInterface
         $this->logging->addDebug(__METHOD__ . '|1|');
         /* @var $order \Magento\Sales\Model\Order */
         $order = $observer->getEvent()->getOrder();
+        $this->response = $this->request->getParams();
+        $this->logging->addDebug(__METHOD__ . '|1|' . var_export($this->request->getParams(), true));
 
+        $this->response = array_change_key_case($this->response, CASE_LOWER);
         if (!$order) {
             $this->logging->addDebug(__METHOD__ . '|no observer order|');
             $order = $this->checkoutSession->getLastRealOrder();
         }
 
         if ($order && $this->configProvider->isSecondChanceEnabled($order->getStore())) {
-            $this->quoteRecreate->duplicate($order);
+            $this->quoteRecreate->duplicate($order,$this->response);
             $this->customerSession->setSkipHandleFailedRecreate(1);
         }
     }

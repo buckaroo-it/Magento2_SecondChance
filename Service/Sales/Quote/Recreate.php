@@ -84,11 +84,11 @@ class Recreate
     }
 
     /**
-     * @param Order $order
-     *
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @param $quote
+     * @param array $response
+     * @return false|mixed
      */
-    protected function recreate($quote)
+    public function recreate($quote, $response = [])
     {
         $this->logger->addDebug(__METHOD__ . '|1|');
         // @codingStandardsIgnoreStart
@@ -223,7 +223,7 @@ class Recreate
             }
         }
 
-        $quote = $this->recreate($quote, $response);
+        $quote = $this->recreate($quote,$response);
 
         return $this->additionalMerge($oldQuote, $quote);
     }
