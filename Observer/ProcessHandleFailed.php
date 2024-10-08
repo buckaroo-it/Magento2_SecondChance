@@ -19,29 +19,27 @@
  */
 namespace Buckaroo\Magento2SecondChance\Observer;
 
+use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\App\RequestInterface;
 
-class ProcessHandleFailed implements \Magento\Framework\Event\ObserverInterface
+class ProcessHandleFailed implements ObserverInterface
 {
-    /**
-     * @var array
-     */
-    protected $response;
-
     protected $logging;
-
     protected $configProvider;
-
     protected $quoteRecreate;
-
     protected $customerSession;
-
     protected $checkoutSession;
     protected $request;
 
-
     /**
-     * @param \Magento\Checkout\Model\Cart          $cart
+     * Constructor
+     *
+     * @param \Buckaroo\Magento2\Logging\Log $logging
+     * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
+     * @param \Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate $quoteRecreate
+     * @param \Magento\Customer\Model\Session $customerSession
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param RequestInterface $request
      */
     public function __construct(
         \Buckaroo\Magento2\Logging\Log $logging,
@@ -60,26 +58,31 @@ class ProcessHandleFailed implements \Magento\Framework\Event\ObserverInterface
     }
 
     /**
-     * @param \Magento\Framework\Event\Observer $observer
+     * Execute observer
      *
+     * @param \Magento\Framework\Event\Observer $observer
      * @return void
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         $this->logging->addDebug(__METHOD__ . '|1|');
+
         /* @var $order \Magento\Sales\Model\Order */
         $order = $observer->getEvent()->getOrder();
-        $this->response = $this->request->getParams();
-        $this->logging->addDebug(__METHOD__ . '|1|' . var_export($this->request->getParams(), true));
+        $response = $this->request->getParams();
+        $this->logging->addDebug(__METHOD__ . '|Response|' . var_export($response, true));
 
-        $this->response = array_change_key_case($this->response, CASE_LOWER);
+        // Convert all keys to lowercase to ensure consistency
+        $response = array_change_key_case($response, CASE_LOWER);
+
         if (!$order) {
             $this->logging->addDebug(__METHOD__ . '|no observer order|');
             $order = $this->checkoutSession->getLastRealOrder();
         }
 
         if ($order && $this->configProvider->isSecondChanceEnabled($order->getStore())) {
-            $this->quoteRecreate->duplicate($order,$this->response);
+            // Pass the response array to the duplicate method
+            $this->quoteRecreate->duplicate($order, $response);
             $this->customerSession->setSkipHandleFailedRecreate(1);
         }
     }

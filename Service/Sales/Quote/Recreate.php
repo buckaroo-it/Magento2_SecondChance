@@ -19,6 +19,17 @@
  */
 namespace Buckaroo\Magento2SecondChance\Service\Sales\Quote;
 
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Checkout\Model\Cart;
+use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Quote\Model\QuoteFactory;
+use Magento\Catalog\Model\ProductFactory;
+use Magento\Quote\Api\CartManagementInterface;
+use Magento\Framework\Message\ManagerInterface;
+use Magento\Quote\Model\ResourceModel\Quote\Address as QuoteAddressResource;
+use Buckaroo\Magento2\Logging\Log;
+
 class Recreate
 {
     /**
@@ -32,42 +43,77 @@ class Recreate
     private $cart;
 
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var CheckoutSession
      */
     private $checkoutSession;
 
+    /**
+     * @var CustomerSession
+     */
     protected $customerSession;
 
+    /**
+     * @var QuoteFactory
+     */
     protected $quoteFactory;
 
+    /**
+     * @var ProductFactory
+     */
     protected $productFactory;
 
+    /**
+     * @var ManagerInterface
+     */
     protected $messageManager;
 
+    /**
+     * @var \Magento\Quote\Model\QuoteRepository
+     */
     protected $quoteRepository;
 
+    /**
+     * @var CartManagementInterface
+     */
     protected $quoteManagement;
 
+    /**
+     * @var QuoteAddressResource
+     */
     protected $quoteAddressResource;
 
+    /**
+     * @var Log
+     */
     protected $logger;
 
     /**
+     * Constructor
+     *
      * @param CartRepositoryInterface $cartRepository
-     * @param Cart                    $cart
+     * @param Cart $cart
+     * @param \Magento\Quote\Model\QuoteRepository $quoteRepository
+     * @param CheckoutSession $checkoutSession
+     * @param CustomerSession $customerSession
+     * @param QuoteFactory $quoteFactory
+     * @param ProductFactory $productFactory
+     * @param CartManagementInterface $quoteManagement
+     * @param ManagerInterface $messageManager
+     * @param QuoteAddressResource $quoteAddressResource
+     * @param Log $logger
      */
     public function __construct(
-        \Magento\Quote\Api\CartRepositoryInterface $cartRepository,
-        \Magento\Checkout\Model\Cart $cart,
+        CartRepositoryInterface $cartRepository,
+        Cart $cart,
         \Magento\Quote\Model\QuoteRepository $quoteRepository,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Customer\Model\Session $customerSession,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Magento\Catalog\Model\ProductFactory $productFactory,
-        \Magento\Quote\Api\CartManagementInterface $quoteManagement,
-        \Magento\Framework\Message\ManagerInterface $messageManager,
-        \Magento\Quote\Model\ResourceModel\Quote\Address $quoteAddressResource,
-        \Buckaroo\Magento2\Logging\Log $logger
+        CheckoutSession $checkoutSession,
+        CustomerSession $customerSession,
+        QuoteFactory $quoteFactory,
+        ProductFactory $productFactory,
+        CartManagementInterface $quoteManagement,
+        ManagerInterface $messageManager,
+        QuoteAddressResource $quoteAddressResource,
+        Log $logger
     ) {
         $this->cartRepository       = $cartRepository;
         $this->cart                 = $cart;
@@ -75,7 +121,6 @@ class Recreate
         $this->customerSession      = $customerSession;
         $this->quoteFactory         = $quoteFactory;
         $this->productFactory       = $productFactory;
-        $this->cart                 = $cart;
         $this->quoteRepository      = $quoteRepository;
         $this->messageManager       = $messageManager;
         $this->quoteManagement      = $quoteManagement;
@@ -84,8 +129,10 @@ class Recreate
     }
 
     /**
-     * @param $quote
-     * @return false|mixed
+     * Recreate the quote by resetting necessary fields
+     *
+     * @param \Magento\Quote\Model\Quote $quote
+     * @return \Magento\Quote\Model\Quote|false
      */
     protected function recreate($quote)
     {
@@ -96,7 +143,7 @@ class Recreate
                 $this->logger->addDebug(__METHOD__ . '|5|' . $newIncrementId);
             }
             $quote->setIsActive(true);
-//            $quote->setTriggerRecollect('1');
+            $quote->setTriggerRecollect('1');
             $quote->setReservedOrderId(null);
             $quote->setBuckarooFee(null);
             $quote->setBaseBuckarooFee(null);
@@ -111,13 +158,19 @@ class Recreate
             $this->cart->setQuote($quote);
             return $quote;
         } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
-            //No such entity
+            // No such entity
             $this->logger->addError($e->getMessage());
         }
         // @codingStandardsIgnoreEnd
         return false;
     }
 
+    /**
+     * Recreate the quote by Quote ID
+     *
+     * @param int $quoteId
+     * @return \Magento\Quote\Model\Quote|null
+     */
     public function recreateById($quoteId)
     {
         $this->logger->addDebug(__METHOD__ . '|1|' . $quoteId);
@@ -125,6 +178,8 @@ class Recreate
             $oldQuote = $this->quoteFactory->create()->load($quoteId);
         } catch (\Exception $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
+            $this->logger->addError($e->getMessage());
+            return null;
         }
 
         if ($oldQuote->getId()) {
@@ -135,6 +190,7 @@ class Recreate
             } catch (\Exception $e) {
                 $this->logger->addError($e->getMessage());
                 $this->messageManager->addErrorMessage($e->getMessage());
+                return null;
             }
 
             $quote->setStoreId($oldQuote->getStoreId());
@@ -168,10 +224,18 @@ class Recreate
             $quote = $this->recreate($quote);
 
             return $this->additionalMerge($oldQuote, $quote);
-
         }
+
+        return null;
     }
 
+    /**
+     * Duplicate the quote based on the order and response
+     *
+     * @param \Magento\Sales\Model\Order $order
+     * @param array $response
+     * @return \Magento\Quote\Model\Quote|false
+     */
     public function duplicate($order, $response = [])
     {
         $quote = $this->quoteFactory->create();
@@ -181,9 +245,10 @@ class Recreate
             if (isset($response['add_service_action_from_magento']) && $response['add_service_action_from_magento'] === 'payfastcheckout') {
                 $this->logger->addDebug(__METHOD__ . '|Handling payfastcheckout specific logic.');
 
+                // Remove customer email
                 $oldQuote->setCustomerEmail(null);
 
-                // Remove existing addresses if they exist
+                // Remove billing and shipping addresses
                 if ($billingAddress = $oldQuote->getBillingAddress()) {
                     $oldQuote->removeAddress($billingAddress->getId());
                     $billingAddress->addData([]); // Optionally clear address data
@@ -199,42 +264,64 @@ class Recreate
             $oldQuote->save();
         } catch (\Exception $e) {
             $this->logger->addError($e->getMessage());
+            return false;
         }
         $quote = $this->recreate($quote);
 
-        return $this->additionalMerge($oldQuote, $quote);
+        // Pass the response array to additionalMerge
+        return $this->additionalMerge($oldQuote, $quote, $response);
     }
 
-    private function additionalMerge($oldQuote, $quote)
+    /**
+     * Additional merge logic with conditional handling.
+     *
+     * @param \Magento\Quote\Model\Quote $oldQuote
+     * @param \Magento\Quote\Model\Quote $quote
+     * @param array $response
+     * @return \Magento\Quote\Model\Quote
+     */
+    private function additionalMerge($oldQuote, $quote, $response = [])
     {
-        if (!$oldQuote->getCustomerIsGuest() && $oldQuote->getCustomerId()) {
-            $quote->setCustomerId($oldQuote->getCustomerId());
-        }
+        // Determine if the current action is 'payfastcheckout'
+        $isPayFastCheckout = isset($response['add_service_action_from_magento']) && $response['add_service_action_from_magento'] === 'payfastcheckout';
+        $this->logger->addDebug(__METHOD__ . '|isPayFastCheckout|' . ($isPayFastCheckout ? 'true' : 'false'));
 
-        $quote->setCustomerEmail($oldQuote->getBillingAddress()->getEmail());
-        $quote->setCustomerIsGuest($oldQuote->getCustomerIsGuest());
+        if (!$isPayFastCheckout) {
+            // Only set customer data if not handling 'payfastcheckout'
+            if (!$oldQuote->getCustomerIsGuest() && $oldQuote->getCustomerId()) {
+                $quote->setCustomerId($oldQuote->getCustomerId());
+            }
 
-        if ($customer = $this->customerSession->getCustomer()) {
-            $quote->setCustomerId($customer->getId());
-            $quote->setCustomerEmail($customer->getEmail());
-            $quote->setCustomerFirstname($customer->getFirstname());
-            $quote->setCustomerLastname($customer->getLastname());
-            $quote->setCustomerGroupId($customer->getGroupId());
-            $quote->setCustomerIsGuest(false);
+            $quote->setCustomerEmail($oldQuote->getBillingAddress()->getEmail());
+            $quote->setCustomerIsGuest($oldQuote->getCustomerIsGuest());
+
+            if ($customer = $this->customerSession->getCustomer()) {
+                $quote->setCustomerId($customer->getId());
+                $quote->setCustomerEmail($customer->getEmail());
+                $quote->setCustomerFirstname($customer->getFirstname());
+                $quote->setCustomerLastname($customer->getLastname());
+                $quote->setCustomerGroupId($customer->getGroupId());
+                $quote->setCustomerIsGuest(false);
+            }
+
+            // Set billing and shipping addresses
+            $quote->setBillingAddress(
+                $oldQuote->getBillingAddress()->setQuote($quote)->setId(
+                    $quote->getBillingAddress()->getId()
+                )
+            );
+            $quote->setShippingAddress(
+                $oldQuote->getShippingAddress()->setQuote($quote)->setId(
+                    $quote->getShippingAddress()->getId()
+                )
+            );
+            $quote->getShippingAddress()->setShippingMethod($oldQuote->getShippingAddress()->getShippingMethod());
+            $this->quoteAddressResource->save($quote->getBillingAddress());
+            $this->quoteAddressResource->save($quote->getShippingAddress());
+        } else {
+            $this->logger->addDebug(__METHOD__ . '|Skipping customer data reassignment due to payfastcheckout.');
+            // Optionally, you can set other fields or perform additional actions here if needed
         }
-        $quote->setBillingAddress(
-            $oldQuote->getBillingAddress()->setQuote($quote)->setId(
-                $quote->getBillingAddress()->getId()
-            )
-        );
-        $quote->setShippingAddress(
-            $oldQuote->getShippingAddress()->setQuote($quote)->setId(
-                $quote->getShippingAddress()->getId()
-            )
-        );
-        $quote->getShippingAddress()->setShippingMethod($oldQuote->getShippingAddress()->getShippingMethod());
-        $this->quoteAddressResource->save($quote->getBillingAddress());
-        $this->quoteAddressResource->save($quote->getShippingAddress());
 
         try {
             $quote->save();
@@ -242,16 +329,17 @@ class Recreate
             $this->cart->save();
         } catch (\Exception $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
+            $this->logger->addError($e->getMessage());
         }
 
         return $quote;
     }
+
     /**
      * Set payment from flag for the new quote
      *
-     * @param Quote $quote
-     * @param Quote $oldQuote
-     *
+     * @param \Magento\Quote\Model\Quote $quote
+     * @param \Magento\Quote\Model\Quote $oldQuote
      * @return void
      */
     protected function setPaymentFromFlag($quote, $oldQuote)
