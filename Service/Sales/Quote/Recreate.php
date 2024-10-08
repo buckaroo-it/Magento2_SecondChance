@@ -85,10 +85,9 @@ class Recreate
 
     /**
      * @param $quote
-     * @param array $response
      * @return false|mixed
      */
-    public function recreate($quote, $response = [])
+    protected function recreate($quote)
     {
         $this->logger->addDebug(__METHOD__ . '|1|');
         // @codingStandardsIgnoreStart
@@ -105,31 +104,11 @@ class Recreate
             $quote->setBuckarooFeeBaseTaxAmount(null);
             $quote->setBuckarooFeeInclTax(null);
             $quote->setBaseBuckarooFeeInclTax(null);
-
-            if (isset($response['add_service_action_from_magento']) && $response['add_service_action_from_magento'] === 'payfastcheckout') {
-                $this->logger->addDebug(__METHOD__ . '|Handling payfastcheckout specific logic.');
-
-                $quote->setCustomerEmail(null);
-
-                // Remove existing addresses if they exist
-                if ($billingAddress = $quote->getBillingAddress()) {
-                    $quote->removeAddress($billingAddress->getId());
-                    $billingAddress->addData([]); // Optionally clear address data
-                }
-
-                if ($shippingAddress = $quote->getShippingAddress()) {
-                    $quote->removeAddress($shippingAddress->getId());
-                    $shippingAddress->addData([]); // Optionally clear address data
-                }
-            }
-
-            $quote->save();
             $this->checkoutSession->replaceQuote($quote);
             if ($newIncrementId) {
                 $quote->setReservedOrderId($newIncrementId);
             }
             $this->cart->setQuote($quote);
-
             return $quote;
         } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
             //No such entity
@@ -198,36 +177,33 @@ class Recreate
         $quote = $this->quoteFactory->create();
         try {
             $oldQuote = $this->quoteFactory->create()->load($order->getQuoteId());
+            // Check if the action is 'payfastcheckout' and remove addresses if needed
+            if (isset($response['add_service_action_from_magento']) && $response['add_service_action_from_magento'] === 'payfastcheckout') {
+                $this->logger->addDebug(__METHOD__ . '|Handling payfastcheckout specific logic.');
+
+                $oldQuote->setCustomerEmail(null);
+
+                // Remove existing addresses if they exist
+                if ($billingAddress = $oldQuote->getBillingAddress()) {
+                    $oldQuote->removeAddress($billingAddress->getId());
+                    $billingAddress->addData([]); // Optionally clear address data
+                }
+
+                if ($shippingAddress = $oldQuote->getShippingAddress()) {
+                    $oldQuote->removeAddress($shippingAddress->getId());
+                    $shippingAddress->addData([]); // Optionally clear address data
+                }
+            }
             $quote->merge($oldQuote)->save();
             $oldQuote->setIsActive(true);
             $oldQuote->save();
         } catch (\Exception $e) {
             $this->logger->addError($e->getMessage());
         }
-
-        // Check if the action is 'payfastcheckout' and remove addresses if needed
-        if (isset($response['add_service_action_from_magento']) && $response['add_service_action_from_magento'] === 'payfastcheckout') {
-            $this->logger->addDebug(__METHOD__ . '|Handling payfastcheckout specific logic.');
-
-            $quote->setCustomerEmail(null);
-
-            // Remove existing addresses if they exist
-            if ($billingAddress = $quote->getBillingAddress()) {
-                $quote->removeAddress($billingAddress->getId());
-                $billingAddress->addData([]); // Optionally clear address data
-            }
-
-            if ($shippingAddress = $quote->getShippingAddress()) {
-                $quote->removeAddress($shippingAddress->getId());
-                $shippingAddress->addData([]); // Optionally clear address data
-            }
-        }
-
-        $quote = $this->recreate($quote,$response);
+        $quote = $this->recreate($quote);
 
         return $this->additionalMerge($oldQuote, $quote);
     }
-
 
     private function additionalMerge($oldQuote, $quote)
     {
