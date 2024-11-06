@@ -29,8 +29,8 @@ php bin/magento setup:static-content:deploy
 ### Requirements
 
 **To use the plugin you must use:**
-- Magento Open Source version 2.3.x & 2.4.x
-- Buckaroo Magento 2 Payments plugin 1.39.0 or higher.
+- Magento Open Source version 2.4.5, 2.4.6, and 2.4.7
+- Buckaroo Magento 2 Payments plugin 1.50.2 or higher.
 
 ### Configuration
 In the module configuration, various settings are available to build an ideal Second Chance flow to suit everyone. The settings below can be adjusted manually.
