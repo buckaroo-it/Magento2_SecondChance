@@ -38,6 +38,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Reflection\DataObjectProcessor;
 use Magento\Store\Model\StoreManagerInterface;
 use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface;
+use Magento\Catalog\Model\Product\Type;
 
 class SecondChanceRepository implements SecondChanceRepositoryInterface
 {
@@ -297,9 +298,11 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     public function deleteByOrderId($orderId)
     {
         $this->logging->addDebug(__METHOD__ . '|1|');
-        $secondChance = $this->getByOrderId($orderId);
-
-        return $this->delete($secondChance);
+        if ($orderId) {
+            $secondChance = $this->getByOrderId($orderId);
+            return $this->delete($secondChance);
+        }
+        return false;
     }
 
     /**
@@ -494,13 +497,21 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
 
         $store = $order->getStore();
         $vars  = [
-            'order'                    => $order,
-            'billing'                  => $order->getBillingAddress(),
-            'payment_html'             => $this->getPaymentHtml($order),
-            'store'                    => $store,
+            'order' => $order,
+            'order_id' => $order->getId(),
+            'billing' => $order->getBillingAddress(),
+            'payment_html' => $this->getPaymentHtml($order),
+            'store' => $order->getStore(),
             'formattedShippingAddress' => $this->getFormattedShippingAddress($order),
-            'formattedBillingAddress'  => $this->getFormattedBillingAddress($order),
+            'formattedBillingAddress' => $this->getFormattedBillingAddress($order),
+            'created_at_formatted' => $order->getCreatedAtFormatted(2),
             'secondChanceToken'        => $secondChance->getToken(),
+            'order_data' => [
+                'customer_name' => $order->getCustomerName(),
+                'is_not_virtual' => $order->getIsNotVirtual(),
+                'email_customer_note' => $order->getEmailCustomerNote(),
+                'frontend_status_label' => $order->getFrontendStatusLabel()
+            ]
         ];
 
         $templateId = ($step == 1) ?
@@ -517,7 +528,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
                     'store' => $store->getId(),
                 ]
             )->setTemplateVars($vars)
-            ->setFrom(
+            ->setFromByScope(
                 [
                     'email' => $this->configProvider->getFromEmail($store),
                     'name'  => $this->configProvider->getFromName($store),
