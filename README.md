@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://www.buckaroo.nl/media/3479/magento2_secondchance_icon.png" width="200px" position="center">
+  <img src="https://github.com/user-attachments/assets/8da148e4-63ec-410b-af0e-033a8ad2aa9e" width="200px" position="center">
 </p>
 
 # Buckaroo Magento 2 Second Chance plugin
