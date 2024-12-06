@@ -17,53 +17,69 @@
  * @copyright Copyright (c) Buckaroo B.V.
  * @license   https://tldrlegal.com/license/mit-license
  */
+declare(strict_types=1);
+
 namespace Buckaroo\Magento2SecondChance\Observer;
 
-class SecondChance implements \Magento\Framework\Event\ObserverInterface
+use Buckaroo\Magento2SecondChance\Model\SecondChanceRepository;
+use Buckaroo\Magento2\Logging\Log;
+use Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance as ConfigProvider;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+
+class SecondChance implements ObserverInterface
 {
     /**
-     * @var \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository
+     * @var SecondChanceRepository
      */
     protected $secondChanceRepository;
 
+    /**
+     * @var Log
+     */
     protected $logging;
 
+    /**
+     * @var ConfigProvider
+     */
     protected $configProvider;
 
     /**
-     * @param \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository      $secondChanceRepository,
-     * @param \Buckaroo\Magento2\Logging\Log                                   $logging,
-     * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
+     * @param SecondChanceRepository $secondChanceRepository
+     * @param Log                    $logging
+     * @param ConfigProvider         $configProvider
      */
     public function __construct(
-        \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository $secondChanceRepository,
-        \Buckaroo\Magento2\Logging\Log $logging,
-        \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
+        SecondChanceRepository $secondChanceRepository,
+        Log $logging,
+        ConfigProvider $configProvider
     ) {
         $this->secondChanceRepository = $secondChanceRepository;
-        $this->logging                = $logging;
-        $this->configProvider         = $configProvider;
+        $this->logging = $logging;
+        $this->configProvider = $configProvider;
     }
 
     /**
-     * @param \Magento\Framework\Event\Observer $observer
+     * Execute observer
      *
+     * @param Observer $observer
      * @return void
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer): void
     {
-        $this->logging->addDebug(__METHOD__ . '|1|');
-        /* @var $order \Magento\Sales\Model\Order */
+        $this->logging->addDebug(__METHOD__ . ' | Start');
+
+        /** @var \Magento\Sales\Model\Order|null $order */
         $order = $observer->getEvent()->getOrder();
-        // $order = $observer->getData('order');
         if ($order && $this->configProvider->isSecondChanceEnabled($order->getStore())) {
-            $this->logging->addDebug(__METHOD__ . '|2|');
+            $this->logging->addDebug(__METHOD__ . ' | Creating second chance for order: ' . $order->getIncrementId());
             try {
                 $this->secondChanceRepository->createSecondChance($order);
             } catch (\Exception $e) {
-                $this->logging->addError('Could not create SC:' . $order->getIncrementId() . $e->getMessage());
+                $this->logging->addError('Could not create SecondChance for order ' . $order->getIncrementId() . ': ' . $e->getMessage());
             }
         }
-        $this->logging->addDebug(__METHOD__ . '|3|');
+
+        $this->logging->addDebug(__METHOD__ . ' | End');
     }
 }

@@ -21,168 +21,231 @@ declare (strict_types = 1);
 
 namespace Buckaroo\Magento2SecondChance\Model;
 
+use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface;
 use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterfaceFactory;
 use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceSearchResultsInterfaceFactory;
 use Buckaroo\Magento2SecondChance\Api\SecondChanceRepositoryInterface;
 use Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance as ResourceSecondChance;
 use Buckaroo\Magento2SecondChance\Model\ResourceModel\SecondChance\CollectionFactory as SecondChanceCollectionFactory;
+use Buckaroo\Magento2\Logging\Log;
 use Buckaroo\Magento2\Model\Method\PayPerEmail;
 use Buckaroo\Magento2\Model\Method\Transfer;
-use Magento\Framework\Api\DataObjectHelper;
+use Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance as ConfigProvider;
+use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\Api\ExtensibleDataObjectConverter;
 use Magento\Framework\Api\ExtensionAttribute\JoinProcessorInterface;
 use Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface;
+use Magento\Framework\App\Area;
 use Magento\Framework\Exception\CouldNotDeleteException;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Reflection\DataObjectProcessor;
-use Magento\Store\Model\StoreManagerInterface;
-use Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface;
+use Magento\Framework\Math\Random;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Model\OrderFactory;
+use Magento\Customer\Model\CustomerFactory;
+use Magento\Sales\Model\OrderIncrementIdChecker;
+use Magento\Quote\Model\QuoteFactory;
+use Magento\Customer\Model\AddressFactory;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Framework\Translate\Inline\StateInterface;
+use Magento\Framework\Mail\Template\TransportBuilder;
+use Magento\Sales\Model\Order\Address\Renderer as AddressRenderer;
+use Magento\Payment\Helper\Data as PaymentHelper;
+use Magento\Sales\Model\Order\Email\Container\ShipmentIdentity;
+use Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate as QuoteRecreate;
 use Magento\Catalog\Model\Product\Type;
 
 class SecondChanceRepository implements SecondChanceRepositoryInterface
 {
-
+    /**
+     * @var SecondChanceFactory
+     */
     protected $secondChanceFactory;
 
+    /**
+     * @var ResourceSecondChance
+     */
     protected $resource;
 
+    /**
+     * @var SecondChanceSearchResultsInterfaceFactory
+     */
     protected $searchResultsFactory;
 
+    /**
+     * @var ExtensibleDataObjectConverter
+     */
     protected $extensibleDataObjectConverter;
 
+    /**
+     * @var SecondChanceCollectionFactory
+     */
     protected $secondChanceCollectionFactory;
 
-    private $storeManager;
-
-    protected $dataSecondChanceFactory;
-
-    protected $dataObjectHelper;
-
-    protected $dataObjectProcessor;
-
+    /**
+     * @var JoinProcessorInterface
+     */
     protected $extensionAttributesJoinProcessor;
 
+    /**
+     * @var CollectionProcessorInterface
+     */
     private $collectionProcessor;
 
+    /**
+     * @var Log
+     */
     protected $logging;
 
+    /**
+     * @var ConfigProvider
+     */
     protected $configProvider;
 
+    /**
+     * @var CheckoutSession
+     */
     protected $checkoutSession;
 
+    /**
+     * @var CustomerSession
+     */
     protected $customerSession;
 
+    /**
+     * @var DateTime
+     */
     protected $dateTime;
 
+    /**
+     * @var Random
+     */
     protected $mathRandom;
 
+    /**
+     * @var OrderFactory
+     */
     protected $orderFactory;
 
+    /**
+     * @var CustomerFactory
+     */
     protected $customerFactory;
 
+    /**
+     * @var OrderIncrementIdChecker
+     */
     private $orderIncrementIdChecker;
 
+    /**
+     * @var QuoteFactory
+     */
     protected $quoteFactory;
 
+    /**
+     * @var AddressFactory
+     */
     protected $addressFactory;
 
+    /**
+     * @var StockRegistryInterface
+     */
     protected $stockRegistry;
 
+    /**
+     * @var StateInterface
+     */
     protected $inlineTranslation;
 
+    /**
+     * @var TransportBuilder
+     */
     protected $transportBuilder;
 
+    /**
+     * @var AddressRenderer
+     */
     protected $addressRenderer;
 
+    /**
+     * @var PaymentHelper
+     */
     protected $paymentHelper;
 
+    /**
+     * @var ShipmentIdentity
+     */
     protected $identityContainer;
-    
+
+    /**
+     * @var QuoteRecreate
+     */
     protected $quoteRecreate;
 
     /**
-     * @param ResourceSecondChance                      $resource
-     * @param SecondChanceFactory                       $secondChanceFactory
-     * @param SecondChanceInterfaceFactory              $dataSecondChanceFactory
-     * @param SecondChanceCollectionFactory             $secondChanceCollectionFactory
-     * @param SecondChanceSearchResultsInterfaceFactory $searchResultsFactory
-     * @param DataObjectHelper                          $dataObjectHelper
-     * @param DataObjectProcessor                       $dataObjectProcessor
-     * @param StoreManagerInterface                     $storeManager
-     * @param CollectionProcessorInterface              $collectionProcessor
-     * @param JoinProcessorInterface                    $extensionAttributesJoinProcessor
-     * @param ExtensibleDataObjectConverter             $extensibleDataObjectConverter
+     * Constructor
      */
     public function __construct(
         ResourceSecondChance $resource,
         SecondChanceFactory $secondChanceFactory,
-        SecondChanceInterfaceFactory $dataSecondChanceFactory,
         SecondChanceCollectionFactory $secondChanceCollectionFactory,
         SecondChanceSearchResultsInterfaceFactory $searchResultsFactory,
-        DataObjectHelper $dataObjectHelper,
-        DataObjectProcessor $dataObjectProcessor,
-        StoreManagerInterface $storeManager,
         CollectionProcessorInterface $collectionProcessor,
         JoinProcessorInterface $extensionAttributesJoinProcessor,
         ExtensibleDataObjectConverter $extensibleDataObjectConverter,
-        \Buckaroo\Magento2\Logging\Log $logging,
-        \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Customer\Model\Session $customerSession,
-        \Magento\Framework\Math\Random $mathRandom,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Customer\Model\CustomerFactory $customerFactory,
-        \Magento\Sales\Model\OrderIncrementIdChecker $orderIncrementIdChecker,
-        \Magento\Quote\Model\QuoteFactory $quoteFactory,
-        \Magento\Customer\Model\AddressFactory $addressFactory,
-        \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry,
-        \Magento\Framework\Translate\Inline\StateInterface $inlineTranslation,
-        \Magento\Framework\Mail\Template\TransportBuilder $transportBuilder,
-        \Magento\Sales\Model\Order\Address\Renderer $addressRenderer,
-        \Magento\Payment\Helper\Data $paymentHelper,
-        \Magento\Sales\Model\Order\Email\Container\ShipmentIdentity $identityContainer,
-        \Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate $quoteRecreate
+        Log $logging,
+        ConfigProvider $configProvider,
+        CheckoutSession $checkoutSession,
+        CustomerSession $customerSession,
+        Random $mathRandom,
+        DateTime $dateTime,
+        OrderFactory $orderFactory,
+        CustomerFactory $customerFactory,
+        OrderIncrementIdChecker $orderIncrementIdChecker,
+        QuoteFactory $quoteFactory,
+        AddressFactory $addressFactory,
+        StockRegistryInterface $stockRegistry,
+        StateInterface $inlineTranslation,
+        TransportBuilder $transportBuilder,
+        AddressRenderer $addressRenderer,
+        PaymentHelper $paymentHelper,
+        ShipmentIdentity $identityContainer,
+        QuoteRecreate $quoteRecreate
     ) {
-        $this->resource                         = $resource;
-        $this->secondChanceFactory              = $secondChanceFactory;
-        $this->secondChanceCollectionFactory    = $secondChanceCollectionFactory;
-        $this->searchResultsFactory             = $searchResultsFactory;
-        $this->dataObjectHelper                 = $dataObjectHelper;
-        $this->dataSecondChanceFactory          = $dataSecondChanceFactory;
-        $this->dataObjectProcessor              = $dataObjectProcessor;
-        $this->storeManager                     = $storeManager;
-        $this->collectionProcessor              = $collectionProcessor;
+        $this->resource = $resource;
+        $this->secondChanceFactory = $secondChanceFactory;
+        $this->secondChanceCollectionFactory = $secondChanceCollectionFactory;
+        $this->searchResultsFactory = $searchResultsFactory;
+        $this->collectionProcessor = $collectionProcessor;
         $this->extensionAttributesJoinProcessor = $extensionAttributesJoinProcessor;
-        $this->extensibleDataObjectConverter    = $extensibleDataObjectConverter;
-        $this->logging                          = $logging;
-        $this->configProvider                   = $configProvider;
-        $this->checkoutSession                  = $checkoutSession;
-        $this->customerSession                  = $customerSession;
-        $this->mathRandom                       = $mathRandom;
-        $this->dateTime                         = $dateTime;
-        $this->orderFactory                     = $orderFactory;
-        $this->customerFactory                  = $customerFactory;
-        $this->orderIncrementIdChecker          = $orderIncrementIdChecker;
-        $this->quoteFactory                     = $quoteFactory;
-        $this->addressFactory                   = $addressFactory;
-        $this->stockRegistry                    = $stockRegistry;
-        $this->inlineTranslation                = $inlineTranslation;
-        $this->transportBuilder                 = $transportBuilder;
-        $this->addressRenderer                  = $addressRenderer;
-        $this->paymentHelper                    = $paymentHelper;
-        $this->identityContainer                = $identityContainer;
-        $this->quoteRecreate                    = $quoteRecreate;
+        $this->extensibleDataObjectConverter = $extensibleDataObjectConverter;
+        $this->logging = $logging;
+        $this->configProvider = $configProvider;
+        $this->checkoutSession = $checkoutSession;
+        $this->customerSession = $customerSession;
+        $this->mathRandom = $mathRandom;
+        $this->dateTime = $dateTime;
+        $this->orderFactory = $orderFactory;
+        $this->customerFactory = $customerFactory;
+        $this->orderIncrementIdChecker = $orderIncrementIdChecker;
+        $this->quoteFactory = $quoteFactory;
+        $this->addressFactory = $addressFactory;
+        $this->stockRegistry = $stockRegistry;
+        $this->inlineTranslation = $inlineTranslation;
+        $this->transportBuilder = $transportBuilder;
+        $this->addressRenderer = $addressRenderer;
+        $this->paymentHelper = $paymentHelper;
+        $this->identityContainer = $identityContainer;
+        $this->quoteRecreate = $quoteRecreate;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
-    public function save(
-        SecondChanceInterface $secondChance
-    ) {
-
+    public function save(SecondChanceInterface $secondChance): SecondChanceInterface
+    {
         $secondChanceData = $this->extensibleDataObjectConverter->toNestedArray(
             $secondChance,
             [],
@@ -195,19 +258,16 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
             $this->resource->save($secondChanceModel);
         } catch (\Exception $exception) {
             throw new CouldNotSaveException(
-                __(
-                    'Could not save the secondChance: %1',
-                    $exception->getMessage()
-                )
+                __('Could not save the secondChance: %1', $exception->getMessage())
             );
         }
         return $secondChanceModel->getDataModel();
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
-    public function get($secondChanceId)
+    public function get($secondChanceId): SecondChanceInterface
     {
         $secondChance = $this->secondChanceFactory->create();
         $this->resource->load($secondChance, $secondChanceId);
@@ -524,7 +584,7 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
         $this->transportBuilder->setTemplateIdentifier($templateId)
             ->setTemplateOptions(
                 [
-                    'area'  => \Magento\Framework\App\Area::AREA_FRONTEND,
+                    'area'  => Area::AREA_FRONTEND,
                     'store' => $store->getId(),
                 ]
             )->setTemplateVars($vars)
@@ -577,12 +637,12 @@ class SecondChanceRepository implements SecondChanceRepositoryInterface
     /**
      * Returns payment info block as HTML.
      *
-     * @param \Magento\Sales\Api\Data\OrderInterface $order
+     * @param OrderInterface $order
      *
      * @return string
      * @throws \Exception
      */
-    private function getPaymentHtml(\Magento\Sales\Api\Data\OrderInterface $order)
+    private function getPaymentHtml(OrderInterface $order)
     {
         return $this->paymentHelper->getInfoBlockHtml(
             $order->getPayment(),

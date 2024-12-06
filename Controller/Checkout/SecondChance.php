@@ -17,12 +17,17 @@
  * @copyright Copyright (c) Buckaroo B.V.
  * @license   https://tldrlegal.com/license/mit-license
  */
+declare(strict_types=1);
 
 namespace Buckaroo\Magento2SecondChance\Controller\Checkout;
 
 use Buckaroo\Magento2\Logging\Log;
+use Buckaroo\Magento2SecondChance\Model\SecondChanceRepository;
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\ResponseInterface;
 
-class SecondChance extends \Magento\Framework\App\Action\Action
+class SecondChance extends Action
 {
     /**
      * @var Log
@@ -30,41 +35,47 @@ class SecondChance extends \Magento\Framework\App\Action\Action
     protected $logger;
 
     /**
-     * @var \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository
+     * @var SecondChanceRepository
      */
     protected $secondChanceRepository;
 
     /**
-     * @param \Magento\Framework\App\Action\Context $context
-     * @param Log                                   $logger
-     * @param SecondChanceRepository                $secondChanceRepository
-     *
-     * @throws \Buckaroo\Magento2SecondChance\Exception
+     * @param Context                $context
+     * @param Log                    $logger
+     * @param SecondChanceRepository $secondChanceRepository
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
+        Context $context,
         Log $logger,
-        \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository $secondChanceRepository
+        SecondChanceRepository $secondChanceRepository
     ) {
         parent::__construct($context);
-        $this->logger                 = $logger;
+        $this->logger = $logger;
         $this->secondChanceRepository = $secondChanceRepository;
     }
 
     /**
-     * Process action
+     * Execute action: Retrieves a token from request and handles the second chance logic.
      *
-     * @return \Magento\Framework\App\ResponseInterface
-     * @throws \Exception
+     * @return ResponseInterface
      */
-    public function execute()
+    public function execute(): ResponseInterface
     {
-        if ($token = $this->getRequest()->getParam('token')) {
+        $token = $this->getRequest()->getParam('token');
+        if ($token) {
             $this->secondChanceRepository->getSecondChanceByToken($token);
         }
         return $this->handleRedirect('checkout', ['_fragment' => 'payment']);
     }
-    public function handleRedirect($path, $arguments = [])
+
+    /**
+     * Redirects the response to a given path with arguments.
+     *
+     * @param string $path
+     * @param array  $arguments
+     * @return ResponseInterface
+     */
+    public function handleRedirect(string $path, array $arguments = []): ResponseInterface
     {
         return $this->_redirect($path, $arguments);
     }

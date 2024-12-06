@@ -17,39 +17,36 @@
  * @copyright Copyright (c) Buckaroo B.V.
  * @license   https://tldrlegal.com/license/mit-license
  */
+declare(strict_types=1);
+
 namespace Buckaroo\Magento2SecondChance\Model\Config\Backend;
 
-/**
- * @method mixed getValue
- */
-class SecondChance extends \Magento\Framework\App\Config\Value
+use Magento\Framework\App\Config\Value;
+use Magento\Framework\Exception\LocalizedException;
+
+class SecondChance extends Value
 {
     /**
-     * Test that the value is a integer within 0 and 24/72 interval
+     * Validate the entered timing value before saving.
      *
      * @return $this
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function save()
     {
         $value = (int) $this->getValue();
         $item = $this->toArray();
-        $interval = $item['field'] == 'second_chance_timing2' ? 72 : 24;
 
-        if (empty($value)) {
-            return parent::save();
-        }
+        // Determine allowed interval (24 or 72)
+        $interval = ($item['field'] ?? '') === 'second_chance_timing2' ? 72 : 24;
 
-        if (!is_int($value) || $value < 0 || $value > $interval) {
-            throw new \Magento\Framework\Exception\LocalizedException(
-                __(
-                    "Please enter a valid integer within 0 and $interval interval"
-                )
+        if ($value !== 0 && ($value < 0 || $value > $interval)) {
+            throw new LocalizedException(
+                __("Please enter a valid integer within 0 and $interval interval")
             );
         }
 
-        $this->setValue($value);
-
+        $this->setValue((string)$value);
         return parent::save();
     }
 }

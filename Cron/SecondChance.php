@@ -17,47 +17,61 @@
  * @copyright Copyright (c) Buckaroo B.V.
  * @license   https://tldrlegal.com/license/mit-license
  */
+declare(strict_types=1);
+
 namespace Buckaroo\Magento2SecondChance\Cron;
+
+use Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance as SecondChanceConfigProvider;
+use Buckaroo\Magento2SecondChance\Model\SecondChanceRepository;
+use Buckaroo\Magento2\Logging\Log;
+use Magento\Store\Api\StoreRepositoryInterface;
 
 class SecondChance
 {
     /**
-     * @var \Buckaroo\Magento2SecondChance\Model\ConfigProvider\Account
+     * @var SecondChanceConfigProvider
      */
     protected $configProvider;
 
     /**
-     * @var Log $logging
+     * @var Log
      */
-    public $logging;
+    protected $logging;
 
     /**
-     * @var \Magento\Store\Api\StoreRepositoryInterface
+     * @var StoreRepositoryInterface
      */
     private $storeRepository;
 
     /**
-     * @var \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository
+     * @var SecondChanceRepository
      */
     protected $secondChanceRepository;
 
     /**
-     * @param \Magento\Checkout\Model\Session\Proxy                $checkoutSession
-     * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\Account      $configProvider
+     * @param SecondChanceConfigProvider $configProvider
+     * @param StoreRepositoryInterface   $storeRepository
+     * @param Log                        $logging
+     * @param SecondChanceRepository     $secondChanceRepository
      */
     public function __construct(
-        \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,
-        \Magento\Store\Api\StoreRepositoryInterface $storeRepository,
-        \Buckaroo\Magento2\Logging\Log $logging,
-        \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository $secondChanceRepository
+        SecondChanceConfigProvider $configProvider,
+        StoreRepositoryInterface $storeRepository,
+        Log $logging,
+        SecondChanceRepository $secondChanceRepository
     ) {
-        $this->configProvider         = $configProvider;
-        $this->storeRepository        = $storeRepository;
-        $this->logging                = $logging;
+        $this->configProvider = $configProvider;
+        $this->storeRepository = $storeRepository;
+        $this->logging = $logging;
         $this->secondChanceRepository = $secondChanceRepository;
     }
 
-    public function execute()
+    /**
+     * Execute second chance cron job to process follow-up emails.
+     *
+     * @return $this
+     */
+    public function execute(): self
     {
         $stores = $this->storeRepository->getList();
         foreach ($stores as $store) {

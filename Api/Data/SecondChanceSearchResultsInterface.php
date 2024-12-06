@@ -21,20 +21,22 @@ declare (strict_types = 1);
 
 namespace Buckaroo\Magento2SecondChance\Api\Data;
 
-interface SecondChanceSearchResultsInterface extends \Magento\Framework\Api\SearchResultsInterface
+use Magento\Framework\Api\SearchResultsInterface;
+
+interface SecondChanceSearchResultsInterface extends SearchResultsInterface
 {
 
     /**
      * Get SecondChance list.
      *
-     * @return \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface[]
+     * @return SecondChanceInterface[]
      */
     public function getItems();
 
     /**
      * Set quote_id list.
      *
-     * @param  \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface[] $items
+     * @param SecondChanceInterface[] $items
      * @return $this
      */
     public function setItems(array $items);

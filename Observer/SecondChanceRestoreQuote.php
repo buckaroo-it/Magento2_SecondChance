@@ -17,43 +17,62 @@
  * @copyright Copyright (c) Buckaroo B.V.
  * @license   https://tldrlegal.com/license/mit-license
  */
+declare(strict_types=1);
+
 namespace Buckaroo\Magento2SecondChance\Observer;
 
-class SecondChanceRestoreQuote implements \Magento\Framework\Event\ObserverInterface
+use Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance as ConfigProvider;
+use Magento\Customer\Model\Session as CustomerSession;
+use Buckaroo\Magento2\Logging\Log;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+
+class SecondChanceRestoreQuote implements ObserverInterface
 {
+    /**
+     * @var ConfigProvider
+     */
     protected $configProvider;
 
+    /**
+     * @var CustomerSession
+     */
     protected $customerSession;
 
-    protected $logging;
     /**
-     *
-     * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
-     * @param \Magento\Customer\Model\Session                                  $customerSession,
-     * @param \Buckaroo\Magento2\Logging\Log                                   $logging,
+     * @var Log
+     */
+    protected $logging;
+
+    /**
+     * @param ConfigProvider  $configProvider
+     * @param CustomerSession $customerSession
+     * @param Log             $logging
      */
     public function __construct(
-        \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,
-        \Magento\Customer\Model\Session $customerSession,
-        \Buckaroo\Magento2\Logging\Log $logging
+        ConfigProvider $configProvider,
+        CustomerSession $customerSession,
+        Log $logging
     ) {
-        $this->configProvider  = $configProvider;
+        $this->configProvider = $configProvider;
         $this->customerSession = $customerSession;
-        $this->logging         = $logging;
+        $this->logging = $logging;
     }
 
     /**
-     * @param \Magento\Framework\Event\Observer $observer
+     * Execute observer
      *
+     * @param Observer $observer
      * @return void
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer): void
     {
-        if ($quoteId = $this->customerSession->getSecondChanceRecreate()) {
+        $quoteId = $this->customerSession->getSecondChanceRecreate();
+        if ($quoteId) {
             try {
                 $this->customerSession->setSecondChanceRecreate(false);
             } catch (\Exception $e) {
-                $this->logging->addError('Could not recreateById SC:' . $quoteId);
+                $this->logging->addError('Could not clear SecondChanceRecreate for quote ' . $quoteId . ': ' . $e->getMessage());
             }
         }
     }

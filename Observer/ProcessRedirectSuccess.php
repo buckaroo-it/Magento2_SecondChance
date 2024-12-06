@@ -17,37 +17,58 @@
  * @copyright Copyright (c) Buckaroo B.V.
  * @license   https://tldrlegal.com/license/mit-license
  */
+declare(strict_types=1);
+
 namespace Buckaroo\Magento2SecondChance\Observer;
 
-class ProcessRedirectSuccess implements \Magento\Framework\Event\ObserverInterface
+use Buckaroo\Magento2\Logging\Log;
+use Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance as ConfigProvider;
+use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+use Magento\Sales\Model\Order;
+
+class ProcessRedirectSuccess implements ObserverInterface
 {
+    /**
+     * @var Log
+     */
     protected $logging;
 
+    /**
+     * @var ConfigProvider
+     */
     protected $configProvider;
 
+    /**
+     * @var CustomerSession
+     */
     protected $customerSession;
 
     /**
-     * @param \Magento\Checkout\Model\Cart          $cart
+     * @param Log            $logging
+     * @param ConfigProvider $configProvider
+     * @param CustomerSession $customerSession
      */
     public function __construct(
-        \Buckaroo\Magento2\Logging\Log $logging,
-        \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,
-        \Magento\Customer\Model\Session $customerSession
+        Log $logging,
+        ConfigProvider $configProvider,
+        CustomerSession $customerSession
     ) {
-        $this->logging         = $logging;
-        $this->configProvider  = $configProvider;
+        $this->logging = $logging;
+        $this->configProvider = $configProvider;
         $this->customerSession = $customerSession;
     }
 
     /**
-     * @param \Magento\Framework\Event\Observer $observer
+     * Execute observer
      *
+     * @param Observer $observer
      * @return void
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer): void
     {
-        /* @var $order \Magento\Sales\Model\Order */
+        /** @var Order|null $order */
         $order = $observer->getEvent()->getOrder();
         if ($order && $this->configProvider->isSecondChanceEnabled($order->getStore())) {
             $this->customerSession->setSkipSecondChance(false);

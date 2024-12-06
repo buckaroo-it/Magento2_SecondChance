@@ -17,73 +17,106 @@
  * @copyright Copyright (c) Buckaroo B.V.
  * @license   https://tldrlegal.com/license/mit-license
  */
+declare(strict_types=1);
+
 namespace Buckaroo\Magento2SecondChance\Observer;
 
+use Buckaroo\Magento2\Logging\Log;
+use Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance as ConfigProvider;
+use Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate;
+use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\App\RequestInterface;
+use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Sales\Model\Order;
 
 class ProcessHandleFailed implements ObserverInterface
 {
+    /**
+     * @var Log
+     */
     protected $logging;
+
+    /**
+     * @var ConfigProvider
+     */
     protected $configProvider;
+
+    /**
+     * @var Recreate
+     */
     protected $quoteRecreate;
+
+    /**
+     * @var CustomerSession
+     */
     protected $customerSession;
+
+    /**
+     * @var CheckoutSession
+     */
     protected $checkoutSession;
+
+    /**
+     * @var RequestInterface
+     */
     protected $request;
 
     /**
      * Constructor
      *
-     * @param \Buckaroo\Magento2\Logging\Log $logging
-     * @param \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
-     * @param \Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate $quoteRecreate
-     * @param \Magento\Customer\Model\Session $customerSession
-     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param Log            $logging
+     * @param ConfigProvider $configProvider
+     * @param Recreate       $quoteRecreate
+     * @param CustomerSession $customerSession
+     * @param CheckoutSession $checkoutSession
      * @param RequestInterface $request
      */
     public function __construct(
-        \Buckaroo\Magento2\Logging\Log $logging,
-        \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider,
-        \Buckaroo\Magento2SecondChance\Service\Sales\Quote\Recreate $quoteRecreate,
-        \Magento\Customer\Model\Session $customerSession,
-        \Magento\Checkout\Model\Session $checkoutSession,
+        Log $logging,
+        ConfigProvider $configProvider,
+        Recreate $quoteRecreate,
+        CustomerSession $customerSession,
+        CheckoutSession $checkoutSession,
         RequestInterface $request
     ) {
-        $this->logging         = $logging;
-        $this->configProvider  = $configProvider;
-        $this->quoteRecreate   = $quoteRecreate;
+        $this->logging = $logging;
+        $this->configProvider = $configProvider;
+        $this->quoteRecreate = $quoteRecreate;
         $this->customerSession = $customerSession;
         $this->checkoutSession = $checkoutSession;
-        $this->request         = $request;
+        $this->request = $request;
     }
 
     /**
      * Execute observer
      *
-     * @param \Magento\Framework\Event\Observer $observer
+     * @param Observer $observer
      * @return void
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer): void
     {
-        $this->logging->addDebug(__METHOD__ . '|1|');
+        $this->logging->addDebug(__METHOD__ . ' | Start');
 
-        /* @var $order \Magento\Sales\Model\Order */
+        /** @var Order|null $order */
         $order = $observer->getEvent()->getOrder();
         $response = $this->request->getParams();
-        $this->logging->addDebug(__METHOD__ . '|Response|' . var_export($response, true));
+        $this->logging->addDebug(__METHOD__ . ' | Response: ' . var_export($response, true));
 
-        // Convert all keys to lowercase to ensure consistency
+        // Normalize keys to lowercase
         $response = array_change_key_case($response, CASE_LOWER);
 
         if (!$order) {
-            $this->logging->addDebug(__METHOD__ . '|no observer order|');
+            $this->logging->addDebug(__METHOD__ . ' | No order in observer, trying checkout session last real order');
             $order = $this->checkoutSession->getLastRealOrder();
         }
 
         if ($order && $this->configProvider->isSecondChanceEnabled($order->getStore())) {
-            // Pass the response array to the duplicate method
             $this->quoteRecreate->duplicate($order, $response);
             $this->customerSession->setSkipHandleFailedRecreate(1);
         }
+
+        $this->logging->addDebug(__METHOD__ . ' | End');
     }
 }

@@ -21,9 +21,10 @@ declare (strict_types = 1);
 
 namespace Buckaroo\Magento2SecondChance\Api\Data;
 
-interface SecondChanceInterface extends \Magento\Framework\Api\ExtensibleDataInterface
-{
+use Magento\Framework\Api\ExtensibleDataInterface;
 
+interface SecondChanceInterface extends ExtensibleDataInterface
+{
     const ENTITY_ID = 'entity_id';
     const ORDER_ID  = 'order_id';
 
@@ -32,30 +33,13 @@ interface SecondChanceInterface extends \Magento\Framework\Api\ExtensibleDataInt
      *
      * @return string|null
      */
-    public function getSecondChanceId();
+    public function getSecondChanceId(): ?string;
 
     /**
      * Set secondChance_id
      *
-     * @param  string $secondChanceId
-     * @return \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceInterface
+     * @param string $secondChanceId
+     * @return SecondChanceInterface
      */
-    public function setSecondChanceId($secondChanceId);
-
-    /**
-     * Retrieve existing extension attributes object or create a new one.
-     *
-     * @return \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceExtensionInterface|null
-     */
-    public function getExtensionAttributes();
-
-    /**
-     * Set an extension attributes object.
-     *
-     * @param  \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceExtensionInterface $extensionAttributes
-     * @return $this
-     */
-    public function setExtensionAttributes(
-        \Buckaroo\Magento2SecondChance\Api\Data\SecondChanceExtensionInterface $extensionAttributes
-    );
+    public function setSecondChanceId(string $secondChanceId): SecondChanceInterface;
 }

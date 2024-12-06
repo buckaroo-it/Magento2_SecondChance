@@ -17,39 +17,52 @@
  * @copyright Copyright (c) Buckaroo B.V.
  * @license   https://tldrlegal.com/license/mit-license
  */
+declare(strict_types=1);
+
 namespace Buckaroo\Magento2SecondChance\Cron;
+
+use Buckaroo\Magento2SecondChance\Model\SecondChanceRepository;
+use Buckaroo\Magento2\Logging\Log;
+use Magento\Store\Api\StoreRepositoryInterface;
 
 class SecondChancePrune
 {
     /**
-     * @var Log $logging
+     * @var Log
      */
-    public $logging;
+    protected $logging;
 
     /**
-     * @var \Magento\Store\Api\StoreRepositoryInterface
+     * @var StoreRepositoryInterface
      */
     private $storeRepository;
 
     /**
-     * @var \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository
+     * @var SecondChanceRepository
      */
     protected $secondChanceRepository;
 
     /**
-     * @param \Magento\Checkout\Model\Session\Proxy                $checkoutSession
+     * @param StoreRepositoryInterface $storeRepository
+     * @param Log                      $logging
+     * @param SecondChanceRepository   $secondChanceRepository
      */
     public function __construct(
-        \Magento\Store\Api\StoreRepositoryInterface $storeRepository,
-        \Buckaroo\Magento2\Logging\Log $logging,
-        \Buckaroo\Magento2SecondChance\Model\SecondChanceRepository $secondChanceRepository
+        StoreRepositoryInterface $storeRepository,
+        Log $logging,
+        SecondChanceRepository $secondChanceRepository
     ) {
-        $this->storeRepository        = $storeRepository;
-        $this->logging                = $logging;
+        $this->storeRepository = $storeRepository;
+        $this->logging = $logging;
         $this->secondChanceRepository = $secondChanceRepository;
     }
 
-    public function execute()
+    /**
+     * Execute prune cron job to remove old second chance records.
+     *
+     * @return $this
+     */
+    public function execute(): self
     {
         $stores = $this->storeRepository->getList();
         foreach ($stores as $store) {

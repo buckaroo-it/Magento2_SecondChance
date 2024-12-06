@@ -17,40 +17,90 @@
  * @copyright Copyright (c) Buckaroo B.V.
  * @license   https://tldrlegal.com/license/mit-license
  */
+declare(strict_types=1);
+
 namespace Buckaroo\Magento2SecondChance\Plugin;
+
+use Buckaroo\Magento2\Plugin\ShippingMethodManagement;
+use Magento\Customer\Model\Session as CustomerSession;
+use Buckaroo\Magento2\Logging\Log;
+use Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance as ConfigProvider;
 
 class SecondChance
 {
+    /**
+     * @var CustomerSession
+     */
     protected $customerSession;
+
+    /**
+     * @var Log
+     */
     protected $logger;
+
+    /**
+     * @var ConfigProvider
+     */
     protected $configProvider;
 
+    /**
+     * @param CustomerSession $customerSession
+     * @param Log             $logger
+     * @param ConfigProvider  $configProvider
+     */
     public function __construct(
-        \Magento\Customer\Model\Session $customerSession,
-        \Buckaroo\Magento2\Logging\Log $logger,
-        \Buckaroo\Magento2SecondChance\Model\ConfigProvider\SecondChance $configProvider
+        CustomerSession $customerSession,
+        Log $logger,
+        ConfigProvider $configProvider
     ) {
         $this->customerSession = $customerSession;
         $this->logger = $logger;
         $this->configProvider = $configProvider;
     }
 
-    public function aroundShouldSkipFurtherEventHandling()
+    /**
+     * Plugin around method for skipping event handling
+     *
+     * @return mixed
+     */
+    public function aroundShouldSkipFurtherEventHandling(): mixed
     {
         return $this->customerSession->getSecondChanceRecreate();
     }
 
-    public function aroundIsNeedRecreate(\Buckaroo\Magento2\Plugin\ShippingMethodManagement $subject, $proceed, $store)
-    {
+    /**
+     * Plugin around method to check if we need to recreate the quote
+     *
+     * @param ShippingMethodManagement $subject
+     * @param callable                                           $proceed
+     * @param mixed                                              $store
+     * @return bool
+     */
+    public function aroundIsNeedRecreate(
+        ShippingMethodManagement $subject,
+        callable $proceed,
+        $store
+    ): bool {
         return $this->configProvider->isSecondChanceEnabled($store);
     }
-    
-    public function aroundGetSkipHandleFailedRecreate()
+
+    /**
+     * Plugin around method to get skip handle failed recreate flag
+     *
+     * @return mixed
+     */
+    public function aroundGetSkipHandleFailedRecreate(): mixed
     {
         return $this->customerSession->getSkipHandleFailedRecreate();
     }
 
-    public function aroundSetSkipHandleFailedRecreate($value)
+    /**
+     * Plugin around method to set skip handle failed recreate flag
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    public function aroundSetSkipHandleFailedRecreate($value): mixed
     {
         return $this->customerSession->setSkipHandleFailedRecreate($value);
     }
