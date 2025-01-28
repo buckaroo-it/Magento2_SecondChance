@@ -29,6 +29,7 @@ use Magento\Quote\Api\CartManagementInterface;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Quote\Model\ResourceModel\Quote\Address as QuoteAddressResource;
 use Buckaroo\Magento2\Logging\Log;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Recreate
 {
@@ -88,6 +89,11 @@ class Recreate
     protected $logger;
 
     /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
      * Constructor
      *
      * @param CartRepositoryInterface $cartRepository
@@ -101,6 +107,7 @@ class Recreate
      * @param ManagerInterface $messageManager
      * @param QuoteAddressResource $quoteAddressResource
      * @param Log $logger
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         CartRepositoryInterface $cartRepository,
@@ -113,7 +120,8 @@ class Recreate
         CartManagementInterface $quoteManagement,
         ManagerInterface $messageManager,
         QuoteAddressResource $quoteAddressResource,
-        Log $logger
+        Log $logger,
+        StoreManagerInterface $storeManager
     ) {
         $this->cartRepository       = $cartRepository;
         $this->cart                 = $cart;
@@ -126,6 +134,7 @@ class Recreate
         $this->quoteManagement      = $quoteManagement;
         $this->quoteAddressResource = $quoteAddressResource;
         $this->logger               = $logger;
+        $this->storeManager         = $storeManager;
     }
 
     /**
@@ -137,11 +146,7 @@ class Recreate
     protected function recreate($quote)
     {
         $this->logger->addDebug(__METHOD__ . '|1|');
-        // @codingStandardsIgnoreStart
         try {
-            if ($newIncrementId = $quote->getReservedOrderId()) {
-                $this->logger->addDebug(__METHOD__ . '|5|' . $newIncrementId);
-            }
             $quote->setIsActive(true);
             $quote->setTriggerRecollect('1');
             $quote->setReservedOrderId(null);
@@ -151,17 +156,10 @@ class Recreate
             $quote->setBuckarooFeeBaseTaxAmount(null);
             $quote->setBuckarooFeeInclTax(null);
             $quote->setBaseBuckarooFeeInclTax(null);
-            $this->checkoutSession->replaceQuote($quote);
-            if ($newIncrementId) {
-                $quote->setReservedOrderId($newIncrementId);
-            }
-            $this->cart->setQuote($quote);
             return $quote;
         } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
-            // No such entity
             $this->logger->addError($e->getMessage());
         }
-        // @codingStandardsIgnoreEnd
         return false;
     }
 
@@ -186,7 +184,16 @@ class Recreate
             $this->logger->addDebug(__METHOD__ . '|5|');
             try {
                 $quote = $this->quoteFactory->create();
-                $quote->merge($oldQuote)->save();
+                $quote->merge($oldQuote);
+                $quote->save();
+
+                // Set the correct store environment after merge
+                $store = $this->storeManager->getStore($oldQuote->getStoreId());
+                $quote->setStore($store);
+                $quote->setIsActive(true);
+                $quote->collectTotals();
+                $quote->save();
+
             } catch (\Exception $e) {
                 $this->logger->addError($e->getMessage());
                 $this->messageManager->addErrorMessage($e->getMessage());
@@ -199,6 +206,7 @@ class Recreate
             $this->setPaymentFromFlag($quote, $oldQuote);
 
             $this->cart->setStoreId($oldQuote->getStoreId());
+            $this->checkoutSession->replaceQuote($quote);
             $this->checkoutSession->setQuoteId($quote->getId());
 
             if ($newIncrementId = $this->customerSession->getSecondChanceNewIncrementId()) {
@@ -222,7 +230,6 @@ class Recreate
 
             $this->logger->addDebug(__METHOD__ . '|30|');
             $quote = $this->recreate($quote);
-
             return $this->additionalMerge($oldQuote, $quote);
         }
 
@@ -241,27 +248,33 @@ class Recreate
         $quote = $this->quoteFactory->create();
         try {
             $oldQuote = $this->quoteFactory->create()->load($order->getQuoteId());
+
             // Check if the action is 'payfastcheckout' and remove addresses if needed
             if (isset($response['add_service_action_from_magento']) && $response['add_service_action_from_magento'] === 'payfastcheckout') {
                 $this->logger->addDebug(__METHOD__ . '|Handling payfastcheckout specific logic.');
-
                 // Remove customer email
                 $oldQuote->setCustomerEmail(null);
 
                 // Remove billing and shipping addresses
                 if ($billingAddress = $oldQuote->getBillingAddress()) {
                     $oldQuote->removeAddress($billingAddress->getId());
-                    $billingAddress->addData([]); // Optionally clear address data
                 }
 
                 if ($shippingAddress = $oldQuote->getShippingAddress()) {
                     $oldQuote->removeAddress($shippingAddress->getId());
-                    $shippingAddress->addData([]); // Optionally clear address data
                 }
             }
-            $quote->merge($oldQuote)->save();
-            $oldQuote->setIsActive(true);
-            $oldQuote->save();
+
+            $quote->merge($oldQuote);
+            $quote->save();
+
+            // Set the correct store environment after merge
+            $store = $this->storeManager->getStore($oldQuote->getStoreId());
+            $quote->setStore($store);
+            $quote->setIsActive(true);
+            $quote->collectTotals();
+            $quote->save();
+
         } catch (\Exception $e) {
             $this->logger->addError($e->getMessage());
             return false;
@@ -282,12 +295,10 @@ class Recreate
      */
     private function additionalMerge($oldQuote, $quote, $response = [])
     {
-        // Determine if the current action is 'payfastcheckout'
         $isPayFastCheckout = isset($response['add_service_action_from_magento']) && $response['add_service_action_from_magento'] === 'payfastcheckout';
         $this->logger->addDebug(__METHOD__ . '|isPayFastCheckout|' . ($isPayFastCheckout ? 'true' : 'false'));
 
         if (!$isPayFastCheckout) {
-            // Only set customer data if not handling 'payfastcheckout'
             if (!$oldQuote->getCustomerIsGuest() && $oldQuote->getCustomerId()) {
                 $quote->setCustomerId($oldQuote->getCustomerId());
             }
@@ -304,7 +315,6 @@ class Recreate
                 $quote->setCustomerIsGuest(false);
             }
 
-            // Set billing and shipping addresses
             $quote->setBillingAddress(
                 $oldQuote->getBillingAddress()->setQuote($quote)->setId(
                     $quote->getBillingAddress()->getId()
@@ -320,7 +330,6 @@ class Recreate
             $this->quoteAddressResource->save($quote->getShippingAddress());
         } else {
             $this->logger->addDebug(__METHOD__ . '|Skipping customer data reassignment due to payfastcheckout.');
-            // Optionally, you can set other fields or perform additional actions here if needed
         }
 
         try {
@@ -345,7 +354,6 @@ class Recreate
     protected function setPaymentFromFlag($quote, $oldQuote)
     {
         $additionalData = $oldQuote->getPayment()->getAdditionalInformation();
-
         if (is_array($additionalData) && isset($additionalData['buckaroo_payment_from'])) {
             $quote->getPayment()->setAdditionalInformation('buckaroo_payment_from', $additionalData['buckaroo_payment_from']);
         }
