@@ -2,7 +2,7 @@
     "name": "buckaroo/magento2secondchance",
     "description": "Buckaroo Magento2 Second Chance extension",
     "require": {
-        "buckaroo/magento2": "~1.50.2"
+        "buckaroo/magento2": "^1.50.2"
     },
     "type": "magento2-module",
     "license": "MIT",
