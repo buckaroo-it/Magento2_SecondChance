@@ -1,67 +1,77 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/8da148e4-63ec-410b-af0e-033a8ad2aa9e" width="200px" position="center">
+  <a href="https://www.buckaroo.nl">
+    <img src="https://raw.githubusercontent.com/buckaroo-it/Media/main/Buckaroo/README.md%20Headers/buckaroo-magento2-second-chance-header-rounded.png" alt="Buckaroo — Second Chance for Magento 2" width="100%">
+  </a>
 </p>
 
-# Buckaroo Magento 2 Second Chance plugin
-[![Latest release](https://badgen.net/github/release/buckaroo-it/Magento2_SecondChance)](https://github.com/buckaroo-it/Magento2_SecondChance/releases)
+<h1 align="center">Buckaroo Second Chance for Magento 2</h1>
 
-### Index
-- [About](#about)
-- [Installation](#installation)
-- [Requirements](#requirements)
-- [Configuration](#configuration)
-- [Contribute](#contribute)
-- [Versioning](#versioning)
-- [Additional information](#additional-information)
 ---
 
-### About
-The Second Chance module makes it possible to follow up unpaid orders with one or two reminder emails. This extension to the Buckaroo Payment module ensures a higher conversion rate.The Second Chance functionality is fully white-labelled, e-mails can be sent from your own corporate identity and mail servers. On top of that, the module can optionally also take into account whether or not stock is available.
+> [!WARNING]
+> **Second Chance is now part of the Buckaroo Magento 2 plugin.** This separate module is no longer needed and is no longer developed. Do not install `buckaroo/magento2secondchance` in a new project — install the [Buckaroo Magento 2 plugin](https://github.com/buckaroo-it/Magento2), which includes Second Chance out of the box.
 
-### Installation
-```
-composer require buckaroo/magento2secondchance
-php bin/magento module:enable Buckaroo_Magento2SecondChance
+---
+
+## About
+
+Second Chance follows up unpaid orders with one or two reminder e-mails, which recovers orders that would otherwise be lost and raises your conversion rate. The e-mails are fully white-labelled, so they go out in your own corporate identity.
+
+The functionality used to live in this repository as a separate module. It has since been merged into the main [Buckaroo Magento 2 plugin](https://github.com/buckaroo-it/Magento2), which now declares `replaces: buckaroo/magento2secondchance` in its `composer.json`.
+
+This repository is kept online for reference and for merchants who are still on an older setup.
+
+---
+
+## Migrating to the main plugin
+
+If you currently have the separate module installed, remove it and make sure you are on a plugin version that includes Second Chance. Run the following from your Magento 2 root folder:
+
+```bash
+composer remove buckaroo/magento2secondchance
+composer update buckaroo/magento2
 php bin/magento setup:upgrade
+php bin/magento setup:di:compile
 php bin/magento setup:static-content:deploy
+php bin/magento cache:flush
 ```
 
-### Requirements
+> [!IMPORTANT]
+> Test this on a staging environment first and check your Second Chance settings and e-mail templates afterwards. Verify that reminder e-mails still go out as expected before you rely on it in production.
 
-**To use the plugin you must use:**
-- Magento Open Source version 2.4.5, 2.4.6, and 2.4.7
-- Buckaroo Magento 2 Payments plugin 1.50.2 or higher.
+---
 
-### Configuration
-In the module configuration, various settings are available to build an ideal Second Chance flow to suit everyone. The settings below can be adjusted manually.
-* Switching on and off 1st and 2nd email.
-* Select template for sending 1st and 2nd email.
-* Determine timing for sending 1st and 2nd email.
-* Don't send payment reminder when product is out of stock (on/off) 
-* Block multiple emails (on/off)
+## Configuration
+
+Second Chance is configured in the main plugin, under **Stores → Configuration → Sales → Buckaroo** in the Magento admin. The available settings are:
+
+- Switch the first and second reminder e-mail on or off.
+- Choose the e-mail template for each reminder.
+- Set the timing for each reminder.
+- Choose whether to send a reminder when the product is out of stock.
+
+Step-by-step instructions: [Second Chance documentation](https://docs.buckaroo.io/docs/magento-2-new-additional-modules-second-chance-module)
+
+---
+
+## Support
+
+Questions about Second Chance belong with the main plugin, since that is where the code now lives.
+
+- **Bug reports and feature requests:** [open an issue on the main plugin](https://github.com/buckaroo-it/Magento2/issues)
+- **Technical support:** [support@buckaroo.nl](mailto:support@buckaroo.nl)
+- **Phone:** +31 (0)30 711 50 50
+- **Gateway status:** [status.buckaroo.io](https://status.buckaroo.io/)
+
+---
+
+## License
+
+This module is open source software licensed under the [MIT license](https://github.com/buckaroo-it/Magento2_SecondChance/blob/master/LICENSE).
+
+---
 
 <p align="center">
-  <img src="https://www.buckaroo.nl/media/2973/secondchance.png" width="750px" position="center">
+  <sub>Made with care by <a href="https://www.buckaroo.nl">Buckaroo</a>.<br>
+  This document is subject to change; typos and language errors are possible.</sub>
 </p>
-
-### Contribute
-
-We really appreciate it when developers contribute to improve the Buckaroo plugins.
-If you want to contribute as well, then please follow our [Contribution Guidelines](CONTRIBUTING.md).
-
-### Versioning
-
-<p align="left">
-  <img src="https://www.buckaroo.nl/media/3480/magento_versioning.png" width="500px" position="center">
-</p>
-
-- **MAJOR:** Breaking changes that require additional testing/caution.
-- **MINOR:** Changes that should not have a big impact.
-- **PATCHES:** Bug and hotfixes only.
-
-### Additional information
-- **Support:** https://support.buckaroo.eu/contact
-- **Contact:** [support@buckaroo.nl](mailto:support@buckaroo.nl) or [+31 (0)30 711 50 50](tel:+310307115050)
-
-<b>Please note:</b><br>
-This file has been prepared with the greatest possible care and is subject to language and/or spelling errors.
